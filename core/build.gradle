@@ -1,0 +1,51 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
+
+    defaultConfig {
+        minSdkVersion rootProject.ext.minSdkVersion
+        versionCode 100
+        versionName "1.0.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    testCompile 'junit:junit:4.12'
+    provided 'com.android.support:appcompat-v7:23.4.0'
+}
+
+ext {
+    bintrayRepo = 'maven'
+    bintrayName = 'core'
+
+    publishedGroupId = 'io.puremetrics'
+    libraryName = 'PureMetrics SDK'
+    artifact = 'core'
+
+    libraryDescription = 'PureMetrics Android Measurement SDK'
+
+    siteUrl = 'www.puremetrics.io'
+    gitUrl = 'https://github.com/PureMetrics/puremetrics-android-sdk.git'
+
+    libraryVersion = '1.0.0'
+
+    developerId = 'puremetrics'
+    developerName = 'Abhishek Nandi'
+    developerEmail = 'abhishek@puremetrics.io'
+
+    licenseName = 'Modified MIT'
+    licenseUrl = 'https://opensource.org/licenses/MIT'
+    allLicenses = ["MIT"]
+}
+
+apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/installv1.gradle'
+apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/bintrayv1.gradle'
