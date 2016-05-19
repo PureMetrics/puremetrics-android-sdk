@@ -1,10 +1,12 @@
+![PureMetrics](https://raw.githubusercontent.com/PureMetrics/puremetrics-android-sdk/master/pm_logo.png)
 PureMetrics Android SDK
 ========================
 This is the android SDK associated with [PureMetrics](http://www.puremetrics.io)
 
 [![Download](https://api.bintray.com/packages/puremetrics/maven/core/images/download.svg) ](https://bintray.com/puremetrics/maven/core/_latestVersion)
 
-###PureMetrics is currently in PRIVATE BETA.
+### PureMetrics is currently in PRIVATE BETA
+[Join](https://goo.gl/amyqCW) the waitlist and be notified for the preview
 
 ##Licence
 ```
