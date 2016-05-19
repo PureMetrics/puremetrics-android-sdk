@@ -86,18 +86,6 @@ final class Constants {
    * SharedPreference key used to store and retrieve the last session start time
    */
   static final String PREF_KEY_NEW_USER = "key_new_user";
-  /**
-   * SharedPreference key used to store and retrieve the last known device attributes
-   */
-  static final String PREF_KEY_DEVICE_ATTRS = "key_device_attrs";
-  /**
-   * SharedPreference key used to store and retrieve the last known user attributes
-   */
-  static final String PREF_KEY_USER_ATTRS = "key_user_attrs";
-  /**
-   * SharedPreference key used to store and retrieve the last known mobile carrier
-   */
-  static final String PREF_KEY_LAST_CARRIER_NAME = "key_mobile_carrier";
 
   static final String PREF_KEY_DEVICE_DATA_TRACKED = "key_device_data_col";
   /**
@@ -153,6 +141,14 @@ final class Constants {
    */
   static final String UA_GENDER = "gender";
   /**
+   * Gender Male
+   */
+  static final String UA_GENDER_MALE = "m";
+  /**
+   * Gender Female
+   */
+  static final String UA_GENDER_FEMALE = "f";
+  /**
    * Phone number of the user
    */
   static final String UA_PHONE = "phone";
@@ -192,10 +188,6 @@ final class Constants {
    * Session Id associated with the particular session
    */
   static final String ATTR_SESSION_ID = "id";
-  /**
-   * The start time for the session
-   */
-  static final String ATTR_SESSION_START = "ss";
   /**
    * Denotes an array of events
    */
@@ -258,4 +250,6 @@ final class Constants {
   static final String PREF_KEY_SYNC_PENDING = "key_sync";
 
   static final String DA_CARRIER = "cn";
+
+  static final String ATTR_CONNECTION_TYPE = "conn";
 }

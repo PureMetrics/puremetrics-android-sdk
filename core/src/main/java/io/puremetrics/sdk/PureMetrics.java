@@ -116,6 +116,7 @@ public final class PureMetrics {
       if (AUTO_TRACKING_ENABLED) trackSessionStart();
     }
   }
+
   /**
    * Registers the {@link ActivityLifecycleListener} for the app
    *
@@ -176,7 +177,7 @@ public final class PureMetrics {
   /**
    * A Builder class for {@link PureMetrics}.
    * It provides a convinient way for setting the various properties of PureMetrics.
-   *
+   * <p/>
    * <strong>Usage:</strong>
    * <pre>
    * <code>
@@ -195,7 +196,7 @@ public final class PureMetrics {
      * Set the Application Id &amp; Application secret associated with the app.
      * As seen on the PureMetrics dashboard
      *
-     * @param appId a string representing the app id
+     * @param appId     a string representing the app id
      * @param appSecret a string representation of the secret associated with the app id
      * @return the current instance of {@link Builder}
      */
@@ -221,6 +222,7 @@ public final class PureMetrics {
 
     /**
      * Disable auto session tracking
+     *
      * @param disable set true if you want to disable auto session tracking
      * @return the current instance of {@link Builder}
      */
@@ -263,6 +265,7 @@ public final class PureMetrics {
 
     /**
      * Sets the logging level for the PureMetrics logging level
+     *
      * @param context An instance of the application {@link Context}
      */
     private void setLoggingLevel(Context context) {
@@ -505,6 +508,7 @@ public final class PureMetrics {
       }
     });
   }
+
   /**
    * Track a user property/trait. These are user level identifiers
    *
@@ -531,6 +535,7 @@ public final class PureMetrics {
       }
     });
   }
+
   /**
    * Track a device property/trait. These are user level identifiers
    *
@@ -771,6 +776,11 @@ public final class PureMetrics {
       requestObject.put(Constants.ATTR_PL, Constants.PLATFORM_ANDROID);
       requestObject.put(Constants.ATTR_APP_VERSION_CODE, versionCode);
       requestObject.put(Constants.ATTR_APP_VERSION_NAME, versionName);
+      requestObject.put(Constants.ATTR_CONNECTION_TYPE, Utils.getNetworkClass(appContext));
+      String li = preferences.getString(Constants.PREF_KEY_LINKING_ID, null);
+      if (!TextUtils.isEmpty(li)) {
+        requestObject.put(Constants.ATTR_LI, li);
+      }
       return requestObject.toString();
     } catch (Throwable e) {
       log(LOG_LEVEL.FATAL, "prepareRequest for uploading", e);
@@ -823,19 +833,107 @@ public final class PureMetrics {
         trackDeviceProperties(Constants.DA_MODEL, Build.MODEL);
         trackDeviceProperties(Constants.DA_OS_VERSION, Build.VERSION.SDK_INT);
         trackDeviceProperties(Constants.ATTR_PL, Constants.PLATFORM_ANDROID);
+        Utils.trackAdvertisementIdIfPossible(_INSTANCE.appContext);
+
       }
     });
   }
 
+  /**
+   * Set the last active time of the user as the current time
+   */
   void setLastActiveTime() {
     synchronized (lock_sharedPref) {
       preferences.edit().putLong(Constants.PREF_KEY_LAST_ACTIVE_TIME, System.currentTimeMillis()).apply();
     }
   }
 
+  /**
+   * Get the last time the user was actibe in the app
+   *
+   * @return The last active time of the user
+   */
   long getLastActiveTime() {
     synchronized (lock_sharedPref) {
       return preferences.getLong(Constants.PREF_KEY_LAST_ACTIVE_TIME, 0);
     }
+  }
+
+  /**
+   * Set the user name
+   *
+   * @param firstName First Name of the user
+   * @param lastName  Last Name of the user
+   */
+  public static void setUserName(final String firstName, final String lastName) {
+    if (!TextUtils.isEmpty(firstName)) {
+      trackUserProperties(Constants.UA_FNAME, firstName);
+    }
+    if (!TextUtils.isEmpty(lastName)) {
+      trackUserProperties(Constants.UA_LNAME, lastName);
+    }
+
+  }
+
+  /**
+   * Set the user age
+   *
+   * @param age Age of the user
+   */
+  public static void setUserAge(int age) {
+    trackUserProperties(Constants.UA_AGE, age);
+  }
+
+  /**
+   * User Gender identifier
+   */
+  public enum GENDER {
+    FEMALE, MALE
+  }
+
+  /**
+   * Set user gender
+   *
+   * @param gender gender value. Possible values {@link GENDER#FEMALE} and {@link GENDER#MALE}
+   */
+  public static void setUserGender(final GENDER gender) {
+    if (gender.compareTo(GENDER.FEMALE) == 0) {
+      trackUserProperties(Constants.UA_GENDER, Constants.UA_GENDER_FEMALE);
+    } else {
+      trackUserProperties(Constants.UA_GENDER, Constants.UA_GENDER_MALE);
+    }
+  }
+
+  /**
+   * Set user User Id. This is the ID using which the user can be uniquely identified on your system
+   *
+   * @param userId The user id of the user
+   */
+  public static void setUserId(final String userId) {
+    //TODO if unique id changes, we might have to change anonymous id
+    if (initialized()) {
+      synchronized (_INSTANCE.lock_sharedPref) {
+        _INSTANCE.preferences.edit().putString(Constants.PREF_KEY_LINKING_ID, userId).apply();
+      }
+    }
+    trackUserProperties(Constants.UA_USER_ID, userId);
+  }
+
+  /**
+   * Set user primary email id
+   *
+   * @param emailAddress The primary email address of the user
+   */
+  public static void setUserEmailAddress(final String emailAddress) {
+    if (!TextUtils.isEmpty(emailAddress)) trackUserProperties(Constants.UA_EMAIL, emailAddress);
+  }
+
+  /**
+   * Set User phone number
+   *
+   * @param phoneNumber The phone number of the user
+   */
+  public static void setUserPhoneNumber(final String phoneNumber) {
+    if (!TextUtils.isEmpty(phoneNumber)) trackUserProperties(Constants.UA_PHONE, phoneNumber);
   }
 }

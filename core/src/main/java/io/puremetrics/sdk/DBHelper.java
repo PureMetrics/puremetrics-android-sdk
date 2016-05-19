@@ -35,7 +35,10 @@ import android.database.sqlite.SQLiteOpenHelper;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-
+/**
+ * A java class of the type {@link SQLiteOpenHelper}
+ * which helps manage the SQLite DB maintained by PureMetrics
+ */
 class DBHelper extends SQLiteOpenHelper {
 
   private static final int DATABASE_VERSION = 1;
@@ -70,12 +73,15 @@ class DBHelper extends SQLiteOpenHelper {
     //not needed as of now
   }
 
+  /**
+   * Internal static instance of DBHelper
+   */
   private static DBHelper _INSTANCE = null;
 
   /**
-   *
-   * @param appContext
-   * @return
+   * Get an instance of the {@link DBHelper}
+   * @param appContext An instance of the application {@link Context}
+   * @return an instance of {@link DBHelper}
    */
   public static synchronized DBHelper getInstance(Context appContext) {
     if (null == _INSTANCE) {
@@ -85,8 +91,8 @@ class DBHelper extends SQLiteOpenHelper {
   }
 
   /**
-   *
-   * @param event_data
+   * Stores event data
+   * @param event_data Event information which needs to be stored
    */
   public void storeEvents(String event_data) {
     synchronized (lock) {
@@ -116,9 +122,12 @@ class DBHelper extends SQLiteOpenHelper {
   }
 
   /**
-   *
-   * @param data
-   * @param type
+   * Stores the attribute data to the table
+   * @param data The attribute data which needs to be saved
+   * @param type The type of attribute.
+   *             it can be of the following types:
+   *             {@link Constants#ATTRIBUTE_TYPE_DEVICE}
+   *             {@link Constants#ATTRIBUTE_TYPE_USER}
    */
   private void storeAttributes(String data, int type) {
     synchronized (lock) {
@@ -148,16 +157,16 @@ class DBHelper extends SQLiteOpenHelper {
   }
 
   /**
-   *
-   * @param data
+   * Store user attributes
+   * @param data The user attribute data to be stored
    */
   public void storeUserAttributes(String data) {
     storeAttributes(data, Constants.ATTRIBUTE_TYPE_USER);
   }
 
   /**
-   *
-   * @param data
+   * Store device attribute
+   * @param data The device attribute data to be stored
    */
   public void storeDeviceAttributes(String data) {
     storeAttributes(data, Constants.ATTRIBUTE_TYPE_DEVICE);
@@ -165,7 +174,7 @@ class DBHelper extends SQLiteOpenHelper {
 
   /**
    * Get Event Data
-   * @return
+   * @return returns a {@link JSONArray} representing the events data
    */
   public JSONArray getEventsData() {
     synchronized (lock) {
@@ -194,7 +203,6 @@ class DBHelper extends SQLiteOpenHelper {
               if (curSession != sessionId) {
                 sessionObject.put(Constants.ATTR_EVENT, eventsArray);
                 sessionObject.put(Constants.ATTR_SESSION_ID, String.valueOf(sessionId));
-                sessionObject.put(Constants.ATTR_SESSION_START, sessionId);
                 sessionArray.put(sessionObject);
 
                 sessionObject = new JSONObject();
@@ -207,7 +215,6 @@ class DBHelper extends SQLiteOpenHelper {
               dataset.moveToNext();
             }
             sessionObject.put(Constants.ATTR_SESSION_ID, String.valueOf(sessionId));
-            sessionObject.put(Constants.ATTR_SESSION_START, sessionId);
             sessionObject.put(Constants.ATTR_EVENT, eventsArray);
             sessionArray.put(sessionObject);
           }
@@ -242,7 +249,7 @@ class DBHelper extends SQLiteOpenHelper {
         dataset = db.query(
                 Constants.TABLE_NAME_PROPERTIES,
                 COLUMNS_ATTRIBUTES,
-                Constants.COLUMN_ATTRIBUTE_TYPE + " = ?",
+                Constants.COLUMN_ATTRIBUTE_TYPE + "=?",
                 new String[]{String.valueOf(Constants.ATTRIBUTE_TYPE_USER)},
                 null, null, null);
         int len = dataset.getCount();
@@ -283,7 +290,7 @@ class DBHelper extends SQLiteOpenHelper {
         dataset = db.query(
                 Constants.TABLE_NAME_PROPERTIES,
                 COLUMNS_ATTRIBUTES,
-                Constants.COLUMN_ATTRIBUTE_TYPE + " = ? ",
+                Constants.COLUMN_ATTRIBUTE_TYPE + "=?",
                 new String[]{String.valueOf(Constants.ATTRIBUTE_TYPE_DEVICE)}
                 , null, null, null);
         int len = dataset.getCount();
@@ -312,6 +319,9 @@ class DBHelper extends SQLiteOpenHelper {
     return null;
   }
 
+  /**
+   * Deletes all information after it has been sent
+   */
   void clearData() {
     synchronized (lock) {
       try {

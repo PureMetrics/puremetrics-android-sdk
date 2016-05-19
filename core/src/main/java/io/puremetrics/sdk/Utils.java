@@ -30,6 +30,8 @@ package io.puremetrics.sdk;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.provider.Settings;
@@ -37,6 +39,8 @@ import android.telephony.TelephonyManager;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.util.Arrays;
@@ -91,7 +95,7 @@ final class Utils {
           return Constants.PREFIX_ID_IMEI + phoneId;
         return phoneId;
       } catch (Throwable e) {
-
+        //intentionally suppressed
       }
     }
     return null;
@@ -112,6 +116,7 @@ final class Utils {
           }
         }
       } catch (RuntimeException e) {
+        //intentionally suppressed
       }
     }
     return null;
@@ -125,31 +130,13 @@ final class Utils {
         return Constants.PREFIX_ID_ANDROID_ID + androidId;
       }
     } catch (RuntimeException e) {
+      //intentionally suppressed
     }
     return null;
   }
 
   static String generateRandomId() {
     return Constants.PREFIX_ID_GENERATED + UUID.randomUUID().toString() + "-" + System.currentTimeMillis();
-  }
-
-  /**
-   * Internal method to convert bytes to hex string
-   *
-   * @param bytes the bytes
-   * @return the string
-   */
-  static String bytesToHexString(byte[] bytes) {
-    final char[] hexArray = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b',
-            'c', 'd', 'e', 'f'};
-    char[] hexChars = new char[bytes.length * 2];
-    int v;
-    for (int j = 0; j < bytes.length; j++) {
-      v = bytes[j] & 0xFF;
-      hexChars[j * 2] = hexArray[v >>> 4];
-      hexChars[j * 2 + 1] = hexArray[v & 0x0F];
-    }
-    return new String(hexChars);
   }
 
   static boolean uploadData(String authBytes, final String data) {
@@ -213,5 +200,78 @@ final class Utils {
       }
     }
     return result;
+  }
+
+  static void trackAdvertisementIdIfPossible(Context appContext) {
+    // This should not be called on the main thread.
+    try {
+      Class AdvertisingIdClient = Class
+              .forName("com.google.android.gms.ads.identifier.AdvertisingIdClient");
+      Method getAdvertisingInfo = AdvertisingIdClient.getMethod("getAdvertisingIdInfo",
+              Context.class);
+      Object advertisingInfo = getAdvertisingInfo.invoke(null, appContext);
+      Method isLimitAdTrackingEnabled = advertisingInfo.getClass().getMethod(
+              "isLimitAdTrackingEnabled");
+      Boolean limitAdTrackingEnabled = (Boolean) isLimitAdTrackingEnabled
+              .invoke(advertisingInfo);
+      if (limitAdTrackingEnabled != null && limitAdTrackingEnabled == Boolean.TRUE) {
+        PureMetrics.trackDeviceProperties(Constants.DA_LAT, true);
+      } else {
+        PureMetrics.trackDeviceProperties(Constants.DA_LAT, false);
+      }
+      Method getId = advertisingInfo.getClass().getMethod("getId");
+      PureMetrics.trackDeviceProperties(Constants.DA_GAID, (String) getId.invoke(advertisingInfo));
+    } catch (ClassNotFoundException e) {
+      PureMetrics.log(PureMetrics.LOG_LEVEL.WARN, "Google Play Services SDK not found!");
+    } catch (InvocationTargetException e) {
+      PureMetrics.log(PureMetrics.LOG_LEVEL.WARN, "Google Play Services not available");
+    } catch (Throwable e) {
+      PureMetrics.log(PureMetrics.LOG_LEVEL.WARN, "Encountered an error connecting to Google Play Services", e);
+    }
+  }
+
+  /**
+   * Get the class of connectivity
+   *
+   * @param context Application {@link Context}
+   * @return a string representing the network class
+   */
+  public static String getNetworkClass(Context context) {
+    try {
+      ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+      NetworkInfo info = cm.getActiveNetworkInfo();
+      if (info == null || !info.isConnected())
+        return "-"; //not connected
+      if (info.getType() == ConnectivityManager.TYPE_WIFI)
+        return "WIFI";
+      if (info.getType() == ConnectivityManager.TYPE_MOBILE) {
+        int networkType = info.getSubtype();
+        switch (networkType) {
+          case TelephonyManager.NETWORK_TYPE_GPRS:
+          case TelephonyManager.NETWORK_TYPE_EDGE:
+          case TelephonyManager.NETWORK_TYPE_CDMA:
+          case TelephonyManager.NETWORK_TYPE_1xRTT:
+          case TelephonyManager.NETWORK_TYPE_IDEN: //api<8 : replace by 11
+            return "2G";
+          case TelephonyManager.NETWORK_TYPE_UMTS:
+          case TelephonyManager.NETWORK_TYPE_EVDO_0:
+          case TelephonyManager.NETWORK_TYPE_EVDO_A:
+          case TelephonyManager.NETWORK_TYPE_HSDPA:
+          case TelephonyManager.NETWORK_TYPE_HSUPA:
+          case TelephonyManager.NETWORK_TYPE_HSPA:
+          case TelephonyManager.NETWORK_TYPE_EVDO_B: //api<9 : replace by 14
+          case TelephonyManager.NETWORK_TYPE_EHRPD:  //api<11 : replace by 12
+          case TelephonyManager.NETWORK_TYPE_HSPAP:  //api<13 : replace by 15
+            return "3G";
+          case TelephonyManager.NETWORK_TYPE_LTE:    //api<11 : replace by 13
+            return "4G";
+          default:
+            return "UNKNOWN";
+        }
+      }
+    } catch (Throwable e) {
+      //intentionally suppressed
+    }
+    return "UNKNOWN";
   }
 }
