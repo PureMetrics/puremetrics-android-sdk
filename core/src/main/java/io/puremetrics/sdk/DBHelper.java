@@ -202,6 +202,7 @@ class DBHelper extends SQLiteOpenHelper {
               }
               if (curSession != sessionId) {
                 sessionObject.put(Constants.ATTR_EVENT, eventsArray);
+                sessionObject.put(Constants.ATTR_SESSION_START, sessionId);
                 sessionObject.put(Constants.ATTR_SESSION_ID, String.valueOf(sessionId));
                 sessionArray.put(sessionObject);
 
@@ -215,6 +216,7 @@ class DBHelper extends SQLiteOpenHelper {
               dataset.moveToNext();
             }
             sessionObject.put(Constants.ATTR_SESSION_ID, String.valueOf(sessionId));
+            sessionObject.put(Constants.ATTR_SESSION_START, sessionId);
             sessionObject.put(Constants.ATTR_EVENT, eventsArray);
             sessionArray.put(sessionObject);
           }

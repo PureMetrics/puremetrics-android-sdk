@@ -108,7 +108,8 @@ public final class PureMetrics {
     }
     long curTime = System.currentTimeMillis();
     long lastActiveTime = _INSTANCE.getLastActiveTime();
-    if ((curTime - lastActiveTime) > _SESSION_DURATION) {
+    _INSTANCE.setLastActiveTime();//This is required SINCE CheckAndTrackSession is called more than once
+    if ((lastActiveTime + _SESSION_DURATION) < curTime) {
       PureMetrics.log(LOG_LEVEL.DEBUG, "Last known session start: " + _INSTANCE.sessionId + " current time: " + curTime + " | _SESSION_DURATION: " + _SESSION_DURATION);
       _INSTANCE.sessionId = curTime;
       _INSTANCE.saveNewSessionId(curTime);
@@ -795,6 +796,8 @@ public final class PureMetrics {
     TaskManager.getInstance().executeTask(new Runnable() {
       @Override
       public void run() {
+        if (_UPLOAD_IN_PROGRESS) return;
+        _UPLOAD_IN_PROGRESS = true;
         String payload = prepareRequest();
         if (null != payload) {
           boolean result = Utils.uploadData(authBytes, payload);
@@ -809,6 +812,7 @@ public final class PureMetrics {
             }
           }
         }
+        _UPLOAD_IN_PROGRESS = false;
       }
     });
   }
@@ -833,7 +837,7 @@ public final class PureMetrics {
         trackDeviceProperties(Constants.DA_MODEL, Build.MODEL);
         trackDeviceProperties(Constants.DA_OS_VERSION, Build.VERSION.SDK_INT);
         trackDeviceProperties(Constants.ATTR_PL, Constants.PLATFORM_ANDROID);
-        Utils.trackAdvertisementIdIfPossible(_INSTANCE.appContext);
+        Utils.trackAdvertisementIdIfPossible(appContext);
 
       }
     });
@@ -936,4 +940,6 @@ public final class PureMetrics {
   public static void setUserPhoneNumber(final String phoneNumber) {
     if (!TextUtils.isEmpty(phoneNumber)) trackUserProperties(Constants.UA_PHONE, phoneNumber);
   }
+
+  static boolean _UPLOAD_IN_PROGRESS = false;
 }

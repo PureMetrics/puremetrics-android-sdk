@@ -188,6 +188,8 @@ final class Constants {
    * Session Id associated with the particular session
    */
   static final String ATTR_SESSION_ID = "id";
+
+  static final String ATTR_SESSION_START = "ss";
   /**
    * Denotes an array of events
    */

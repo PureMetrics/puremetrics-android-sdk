@@ -70,7 +70,7 @@ final class Utils {
    */
   static String getDeviceId(Context appContext) {
     String deviceId = null;
-    if (isPhone(appContext)) {
+    if (hasTelephoneFeature(appContext)) {
       deviceId = getWifiMac(appContext);
       if (null == deviceId) {
         deviceId = getIMEI(appContext);
@@ -101,7 +101,7 @@ final class Utils {
     return null;
   }
 
-  static boolean isPhone(Context appContext) {
+  static boolean hasTelephoneFeature(Context appContext) {
     PackageManager packageManager = appContext.getPackageManager();
     return packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY);
   }
@@ -190,7 +190,7 @@ final class Utils {
     outputStream.write(data);
     int responseCode = urlConnection.getResponseCode();
     String responseMessage = urlConnection.getResponseMessage();
-    if (responseCode == 200) {
+    if (responseCode == 200 || responseCode == 204) {
       PureMetrics.logAPIResponse("Upload API", responseCode, null, responseMessage);
       return true;
     } else if (responseCode == 412) {
