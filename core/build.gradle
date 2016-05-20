@@ -6,8 +6,8 @@ android {
 
     defaultConfig {
         minSdkVersion rootProject.ext.minSdkVersion
-        versionCode 100
-        versionName "1.0.0"
+        versionCode 101
+        versionName "1.0.1"
     }
     buildTypes {
         release {
@@ -36,7 +36,7 @@ ext {
     siteUrl = 'www.puremetrics.io'
     gitUrl = 'https://github.com/PureMetrics/puremetrics-android-sdk.git'
 
-    libraryVersion = '1.0.0'
+    libraryVersion = '1.0.1'
 
     developerId = 'puremetrics'
     developerName = 'Abhishek Nandi'

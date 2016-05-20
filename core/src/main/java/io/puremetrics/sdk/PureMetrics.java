@@ -178,7 +178,7 @@ public final class PureMetrics {
   /**
    * A Builder class for {@link PureMetrics}.
    * It provides a convinient way for setting the various properties of PureMetrics.
-   * <p/>
+   *
    * <strong>Usage:</strong>
    * <pre>
    * <code>
