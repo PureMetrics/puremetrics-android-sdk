@@ -29,6 +29,7 @@ package io.puremetrics.sdk;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -37,6 +38,7 @@ import android.content.res.Resources;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
+import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.DisplayMetrics;
@@ -49,6 +51,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
+import java.util.Set;
 import java.util.TimeZone;
 
 /**
@@ -109,7 +112,7 @@ public final class PureMetrics {
   /**
    * Check and see if its a new session or is an old session
    */
-  static void checkAndTrackSession() {
+  static void checkAndTrackSession(Activity activity) {
     if (!initialized()) {
       log(LOG_LEVEL.FATAL, "PureMetrics was not initialized. " +
               "Please add PureMetrics.withBuilder().setAppConfiguration().init(context)");
@@ -130,7 +133,21 @@ public final class PureMetrics {
       _INSTANCE.sessionId = curTime;
       _INSTANCE.saveNewSessionId(curTime);
       //if it a new session and auto tracking is enabled track a session start event
-      if (AUTO_TRACKING_ENABLED) trackSessionStart();
+      if (AUTO_TRACKING_ENABLED) {
+        Intent intent = activity.getIntent();
+        if (null != intent) {
+          Bundle extras = intent.getExtras();
+          if (null != extras) {
+            Set<String> keySet = extras.keySet();
+            HashMap map = new HashMap();
+            for (String key : keySet) {
+              map.put(key, extras.get(key));
+            }
+            trackSessionStart(map);
+          }
+        }
+        trackSessionStart();
+      }
     }
   }
 

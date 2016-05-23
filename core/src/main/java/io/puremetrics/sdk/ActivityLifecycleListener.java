@@ -42,7 +42,7 @@ class ActivityLifecycleListener implements Application.ActivityLifecycleCallback
   @Override
   public void onActivityStarted(Activity activity) {
     PureMetrics.startActivity();
-    PureMetrics.checkAndTrackSession();
+    PureMetrics.checkAndTrackSession(activity);
   }
 
   @Override

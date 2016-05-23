@@ -10,7 +10,7 @@ public class Appliction extends Application {
   public void onCreate() {
     super.onCreate();
     PureMetrics.withBuilder()
-            .setAppConfiguration("jk01u2kq2u6d3i2gf0pa71hf2p1463663065972", "76uehq09i4idr5n8dmqnjun0tm")
+            .setAppConfiguration("8mscch353r78tevl563c44hfcb1464000940180", "v6mtbjhasegmr4eu1sdcpk6sb1")
             .setLoggingLevel(PureMetrics.LOG_LEVEL.DEBUG)
             .init(getApplicationContext());
   }
