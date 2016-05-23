@@ -813,38 +813,44 @@ public final class PureMetrics {
     }
     return null;
   }
-
   /**
    * Schedule a data upload
    */
   void scheduleDataSync() {
+    if (_UPLOAD_IN_PROGRESS) {
+      log(LOG_LEVEL.DEBUG, "Upload is already in progress . . .");
+      return;
+    }
+    _UPLOAD_IN_PROGRESS = true;
     TaskManager.getInstance().executeTask(new Runnable() {
       @Override
       public void run() {
-        ConnectivityManager cm =
-                (ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        boolean isConnected = activeNetwork != null &&
-                activeNetwork.isConnectedOrConnecting();
-        if (!isConnected) {
-          log(LOG_LEVEL.DEBUG, "Not connected to Internet. Will schedule sync for later");
-          return;
-        }
-        if (_UPLOAD_IN_PROGRESS) return;
-        _UPLOAD_IN_PROGRESS = true;
-        String payload = prepareRequest();
-        if (null != payload) {
-          boolean result = Utils.uploadData(authBytes, payload);
-          if (result) {
-            Utils.disableNetworkListener(appContext);
-            databaseHelper.clearData();
-          } else {
-            Utils.enableNetworkListener(appContext);
+        try {
+          ConnectivityManager cm =
+                  (ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+          NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+          boolean isConnected = activeNetwork != null &&
+                  activeNetwork.isConnectedOrConnecting();
+          if (!isConnected) {
+            log(LOG_LEVEL.DEBUG, "Not connected to Internet. Will schedule sync for later");
+            return;
           }
-        } else {
-          Utils.disableNetworkListener(appContext);
+          String payload = prepareRequest();
+          if (null != payload) {
+            boolean result = Utils.uploadData(authBytes, payload);
+            if (result) {
+              Utils.disableNetworkListener(appContext);
+              databaseHelper.clearData();
+            } else {
+              Utils.enableNetworkListener(appContext);
+            }
+          } else {
+            PureMetrics.log(LOG_LEVEL.DEBUG, "Found Nothing to send");
+            Utils.disableNetworkListener(appContext);
+          }
+        } finally {
+          _UPLOAD_IN_PROGRESS = false;
         }
-        _UPLOAD_IN_PROGRESS = false;
       }
     });
   }

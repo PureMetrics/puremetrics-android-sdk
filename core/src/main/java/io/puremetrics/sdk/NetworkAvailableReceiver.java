@@ -38,7 +38,7 @@ public class NetworkAvailableReceiver extends BroadcastReceiver {
   @Override
   public void onReceive(Context context, Intent intent) {
     String action = intent.getAction();
-    if (null != action && action.equalsIgnoreCase("android.permission.ACCESS_NETWORK_STATE")) {
+    if (null != action && action.equalsIgnoreCase("android.net.conn.CONNECTIVITY_CHANGE")) {
       ConnectivityManager cm =
               (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 
