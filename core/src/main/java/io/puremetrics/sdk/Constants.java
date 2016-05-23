@@ -157,49 +157,51 @@ final class Constants {
    */
   static final String UA_EMAIL = "email";
   /**
-   * Device identifier.
+   * [API Request] JSON Attribute : Device identifier.
    */
   static final String ATTR_DI = "di";
   /**
-   * The anonymous id associated with the user
+   * [API Request] JSON Attribute : The anonymous id associated with the user
    */
   static final String ATTR_AI = "ai";
   /**
-   * Linking ID or the ID using which a user can be identified on the client system.
+   * [API Request] JSON Attribute : Linking ID or the ID using which a user can be identified on the client system.
    */
   static final String ATTR_LI = "li";
   /**
-   * The platform
+   * [API Request] JSON Attribute : The platform
    */
   static final String ATTR_PL = "pl";
   /**
-   * Timestamp, epoch time in milliseconds
+   * [API Request] JSON Attribute : Timestamp, epoch time in milliseconds
    */
   static final String ATTR_TS = "ts";
   /**
-   * The timezone of the device
+   * [API Request] JSON Attribute : The timezone of the device
    */
   static final String ATTR_TZ = "tz";
   /**
-   * An array of session data
+   * [API Request] JSON Attribute : An array of session data
    */
   static final String ATTR_SESSION = "s";
   /**
-   * Session Id associated with the particular session
+   * [API Request] JSON Attribute : Session Id associated with the particular session
    */
   static final String ATTR_SESSION_ID = "id";
-
+  /**
+   * [API Request] JSON Attribute : Session start time for the specific session
+   */
   static final String ATTR_SESSION_START = "ss";
   /**
-   * Denotes an array of events
+   * [API Request] JSON Attribute : Denotes an array of events
    */
   static final String ATTR_EVENT = "e";
   /**
-   * Name of the event
+   * [API Request] JSON Attribute : Name of the event
    */
   static final String ATTR_EVENT_NAME = "ev";
   /**
-   * Event attributes associated with the event
+   * [API Request] JSON Attribute : Event attributes associated with the event
    */
   static final String ATTR_EVENT_ATTR = "attr";
   /**
@@ -211,11 +213,11 @@ final class Constants {
    */
   static final String EVENT_TYPE = "type";
   /**
-   * JSONAttribute which denotes the fields for user attributes
+   * [API Request] JSON Attribute : Which denotes the fields for user attributes
    */
   static final String ATTR_UA = "ua";
   /**
-   * JSON Attribute which denotes the fields for device attributes
+   * [API Request] JSON Attribute : Which denotes the fields for device attributes
    */
   static final String ATTR_DA = "da";
   /**

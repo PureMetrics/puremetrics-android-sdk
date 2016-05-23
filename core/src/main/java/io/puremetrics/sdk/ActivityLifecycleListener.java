@@ -31,12 +31,12 @@ import android.app.Application;
 import android.os.Bundle;
 
 /**
- *
+ * This forms the backbone of the SDK which notifiers
+ * for all lifecycle callbacks of all the activities in the application
  */
 class ActivityLifecycleListener implements Application.ActivityLifecycleCallbacks {
   @Override
   public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
-
   }
 
   @Override
@@ -47,12 +47,10 @@ class ActivityLifecycleListener implements Application.ActivityLifecycleCallback
 
   @Override
   public void onActivityResumed(Activity activity) {
-
   }
 
   @Override
   public void onActivityPaused(Activity activity) {
-
   }
 
   @Override
@@ -66,7 +64,6 @@ class ActivityLifecycleListener implements Application.ActivityLifecycleCallback
 
   @Override
   public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
-
   }
 
   @Override

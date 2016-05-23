@@ -1,21 +1,21 @@
 /**
  * Modified MIT License
- * <p/>
+ * <p>
  * Copyright 2016 PureMetrics
- * <p/>
+ * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * <p/>
+ * <p>
  * 1. The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * <p/>
+ * <p>
  * 2. All copies of substantial portions of the Software may only be used in connection
  * with services provided by PureMetrics.
- * <p/>
+ * <p>
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -28,6 +28,7 @@ package io.puremetrics.sdk;
 
 
 import android.Manifest;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
@@ -273,5 +274,31 @@ final class Utils {
       //intentionally suppressed
     }
     return "UNKNOWN";
+  }
+
+  /**
+   * Enable the network change listener component.
+   * This is required when some data is pending to be synced.
+   *
+   * @param appContext An instance of the application {@link Context}
+   */
+  static void enableNetworkListener(Context appContext) {
+    ComponentName receiver = new ComponentName(appContext, NetworkAvailableReceiver.class);
+    PackageManager pm = appContext.getPackageManager();
+    pm.setComponentEnabledSetting(receiver,
+            PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
+  }
+
+  /**
+   * Disables the network change listener component.
+   * This is required when everything has been synced and nothing is pending to be synced
+   *
+   * @param appContext An instance of the application {@link Context}
+   */
+  static void disableNetworkListener(Context appContext) {
+    ComponentName receiver = new ComponentName(appContext, NetworkAvailableReceiver.class);
+    PackageManager pm = appContext.getPackageManager();
+    pm.setComponentEnabledSetting(receiver,
+            PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
   }
 }

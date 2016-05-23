@@ -54,9 +54,17 @@ public final class PureMetrics {
    * An instance of the application {@link Context}
    */
   private Context appContext;
-
+  /**
+   * An instance of the {@link DBHelper}
+   */
   private DBHelper databaseHelper;
+  /**
+   * Current session Id
+   */
   long sessionId;
+  /**
+   * Authorization Bytes to be added for Http BASIC Auth
+   */
   private String authBytes;
 
   /**
@@ -94,7 +102,7 @@ public final class PureMetrics {
       trackAcquisition();
       collectDeviceInfo();
     }
-    checkAndTrackSession();
+    Utils.enableNetworkListener(appContext);
   }
 
   /**
@@ -128,8 +136,17 @@ public final class PureMetrics {
     ((Application) appContext).registerActivityLifecycleCallbacks(new ActivityLifecycleListener());
   }
 
+  /**
+   * The singleton instance of {@link PureMetrics}
+   */
   static PureMetrics _INSTANCE;
 
+  /**
+   * Get the current instance of {@link PureMetrics}.
+   * Will return null if it has not been initialized
+   *
+   * @return the current instance of {@link PureMetrics} or null if not initialized
+   */
   static PureMetrics getInstance() {
     return _INSTANCE;
   }
@@ -805,6 +822,7 @@ public final class PureMetrics {
             synchronized (lock_sharedPref) {
               preferences.edit().putBoolean(Constants.PREF_KEY_SYNC_PENDING, false).apply();
             }
+            Utils.disableNetworkListener(appContext);
             databaseHelper.clearData();
           } else {
             synchronized (lock_sharedPref) {
@@ -941,5 +959,8 @@ public final class PureMetrics {
     if (!TextUtils.isEmpty(phoneNumber)) trackUserProperties(Constants.UA_PHONE, phoneNumber);
   }
 
+  /**
+   * A boolean which denotes whether upload is in progress or not
+   */
   static boolean _UPLOAD_IN_PROGRESS = false;
 }

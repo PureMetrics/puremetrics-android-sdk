@@ -69,7 +69,12 @@ final class TaskManager {
    * @param task An instance of {@link Runnable} which represents the task
    */
   public void executeTask(Runnable task) {
-    workerPool.submit(task);
+    try {
+      workerPool.submit(task);
+    } catch (Throwable e) {
+      PureMetrics.log(PureMetrics.LOG_LEVEL.ERROR, "TaskManager:executeTask", e);
+    }
+
   }
 
   /**

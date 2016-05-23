@@ -5,6 +5,13 @@ import android.content.pm.PackageManager;
 
 class SupportCompatV4 {
 
+  /**
+   * Proxy for Checking Permissions
+   *
+   * @param context    Application {@link Context}
+   * @param permission String representation of the android permission to check for
+   * @return true if the permission is granted, false otherwise
+   */
   static boolean checkSelfPermission(Context context, String permission) {
     // Catch for rare "Unknown exception code: 1 msg null" exception
     try {
