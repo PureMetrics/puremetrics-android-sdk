@@ -109,9 +109,9 @@ class DBHelper extends SQLiteOpenHelper {
                 SQLiteDatabase.CONFLICT_REPLACE
         );
         if (result == -1) {
-          PureMetrics.log(PureMetrics.LOG_LEVEL.DEBUG, "Failed to insert record");
+          PureMetrics.log(PureMetrics.LOG_LEVEL.DEBUG, "Failed to insert event record");
         } else {
-          PureMetrics.log(PureMetrics.LOG_LEVEL.DEBUG, "Stored record: " + event_data);
+          PureMetrics.log(PureMetrics.LOG_LEVEL.DEBUG, "Stored event record: " + event_data);
         }
       } catch (Throwable e) {
         PureMetrics.log(PureMetrics.LOG_LEVEL.ERROR, "While inserting events", e);
@@ -144,9 +144,9 @@ class DBHelper extends SQLiteOpenHelper {
                 SQLiteDatabase.CONFLICT_REPLACE
         );
         if (result == -1) {
-          PureMetrics.log(PureMetrics.LOG_LEVEL.DEBUG, "Failed to insert record");
+          PureMetrics.log(PureMetrics.LOG_LEVEL.DEBUG, "Failed to insert attribute record");
         } else {
-          PureMetrics.log(PureMetrics.LOG_LEVEL.DEBUG, "Stored record: " + data);
+          PureMetrics.log(PureMetrics.LOG_LEVEL.DEBUG, "Stored attribute record: " + data);
         }
       } catch (Throwable e) {
         PureMetrics.log(PureMetrics.LOG_LEVEL.ERROR, "While inserting ATTRIBUTES", e);

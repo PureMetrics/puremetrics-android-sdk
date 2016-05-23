@@ -37,14 +37,17 @@ public class NetworkAvailableReceiver extends BroadcastReceiver {
 
   @Override
   public void onReceive(Context context, Intent intent) {
-    ConnectivityManager cm =
-            (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+    String action = intent.getAction();
+    if (null != action && action.equalsIgnoreCase("android.permission.ACCESS_NETWORK_STATE")) {
+      ConnectivityManager cm =
+              (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 
-    NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-    boolean isConnected = activeNetwork != null &&
-            activeNetwork.isConnectedOrConnecting();
-    if (isConnected) {
-      PureMetrics._INSTANCE.scheduleDataSync();
+      NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+      boolean isConnected = activeNetwork != null &&
+              activeNetwork.isConnectedOrConnecting();
+      if (isConnected) {
+        PureMetrics._INSTANCE.scheduleDataSync();
+      }
     }
   }
 }

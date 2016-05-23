@@ -33,10 +33,16 @@ import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.text.TextUtils;
 import android.util.Base64;
+import android.util.DisplayMetrics;
 import android.util.Log;
+
+import com.facebook.device.yearclass.YearClass;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -98,11 +104,6 @@ public final class PureMetrics {
 
     //start of tracking
     registerLifeCycleHandler(appContext);
-    if (isFirstTimeUser()) {
-      trackAcquisition();
-      collectDeviceInfo();
-    }
-    Utils.enableNetworkListener(appContext);
   }
 
   /**
@@ -117,6 +118,13 @@ public final class PureMetrics {
     long curTime = System.currentTimeMillis();
     long lastActiveTime = _INSTANCE.getLastActiveTime();
     _INSTANCE.setLastActiveTime();//This is required SINCE CheckAndTrackSession is called more than once
+
+    if (_INSTANCE.isFirstTimeUser()) {
+      trackAcquisition();
+      _INSTANCE.collectDeviceInfo();
+    }
+    Utils.enableNetworkListener(_INSTANCE.appContext);
+
     if ((lastActiveTime + _SESSION_DURATION) < curTime) {
       PureMetrics.log(LOG_LEVEL.DEBUG, "Last known session start: " + _INSTANCE.sessionId + " current time: " + curTime + " | _SESSION_DURATION: " + _SESSION_DURATION);
       _INSTANCE.sessionId = curTime;
@@ -813,22 +821,28 @@ public final class PureMetrics {
     TaskManager.getInstance().executeTask(new Runnable() {
       @Override
       public void run() {
+        ConnectivityManager cm =
+                (ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        boolean isConnected = activeNetwork != null &&
+                activeNetwork.isConnectedOrConnecting();
+        if (!isConnected) {
+          log(LOG_LEVEL.DEBUG, "Not connected to Internet. Will schedule sync for later");
+          return;
+        }
         if (_UPLOAD_IN_PROGRESS) return;
         _UPLOAD_IN_PROGRESS = true;
         String payload = prepareRequest();
         if (null != payload) {
           boolean result = Utils.uploadData(authBytes, payload);
           if (result) {
-            synchronized (lock_sharedPref) {
-              preferences.edit().putBoolean(Constants.PREF_KEY_SYNC_PENDING, false).apply();
-            }
             Utils.disableNetworkListener(appContext);
             databaseHelper.clearData();
           } else {
-            synchronized (lock_sharedPref) {
-              preferences.edit().putBoolean(Constants.PREF_KEY_SYNC_PENDING, true).apply();
-            }
+            Utils.enableNetworkListener(appContext);
           }
+        } else {
+          Utils.disableNetworkListener(appContext);
         }
         _UPLOAD_IN_PROGRESS = false;
       }
@@ -839,11 +853,6 @@ public final class PureMetrics {
    * Collects the device information if it has not been tracked yet.
    */
   void collectDeviceInfo() {
-    synchronized (lock_sharedPref) {
-      boolean collected = preferences.getBoolean(Constants.PREF_KEY_DEVICE_DATA_TRACKED, false);
-      if (collected) return;
-      preferences.edit().putBoolean(Constants.PREF_KEY_DEVICE_DATA_TRACKED, true).apply();
-    }
     TaskManager.getInstance().executeTask(new Runnable() {
       @Override
       public void run() {
@@ -856,7 +865,12 @@ public final class PureMetrics {
         trackDeviceProperties(Constants.DA_OS_VERSION, Build.VERSION.SDK_INT);
         trackDeviceProperties(Constants.ATTR_PL, Constants.PLATFORM_ANDROID);
         Utils.trackAdvertisementIdIfPossible(appContext);
-
+        DisplayMetrics dm = Resources.getSystem().getDisplayMetrics();
+        trackDeviceProperties(Constants.DA_DENSITY, dm.densityDpi);
+        trackDeviceProperties(Constants.DA_DISPLAY_MINPX,
+                dm.widthPixels > dm.heightPixels ? dm.heightPixels : dm.widthPixels);
+        int year = YearClass.get(appContext);
+        trackDeviceProperties(Constants.DA_YEAR, year);
       }
     });
   }

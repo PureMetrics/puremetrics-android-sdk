@@ -52,17 +52,25 @@ final class Constants {
    * associated with the event row
    */
   static final String COLUMN_EVENTS_SESSION = "sid";
-
+  /**
+   * COLUMN Attribute type for table {@link #TABLE_NAME_PROPERTIES}
+   */
   static final String COLUMN_ATTRIBUTE_TYPE = "type";
-
+  /**
+   * Attribute type USER for Database table {@link #TABLE_NAME_PROPERTIES}
+   */
   static final int ATTRIBUTE_TYPE_USER = 1;
-
+  /**
+   * Attribute type DEVICE for Database table {@link #TABLE_NAME_PROPERTIES}
+   */
   static final int ATTRIBUTE_TYPE_DEVICE = 2;
   /**
    * Column of {@link #TABLE_NAME_EVENTS} table which has the event information
    */
   static final String COLUMN_EVENTS_EV_JSON_STR = "event_value";
-
+  /**
+   * Column of {@link #TABLE_NAME_PROPERTIES} table which has the attribute information
+   */
   static final String COLUMN_ATTRIBUTES_JSON_STR = "attr_value";
   /**
    * SharedPreference key used to store and retrieve the last known device id
@@ -80,14 +88,14 @@ final class Constants {
    * SharedPreference key used to store and retrieve the last known session id
    */
   static final String PREF_KEY_LAST_SESSION_ID = "key_l_si";
-
+  /**
+   * SharedPreference key used to store and retrieve the last active time of the user
+   */
   static final String PREF_KEY_LAST_ACTIVE_TIME = "key_l_ac";
   /**
    * SharedPreference key used to store and retrieve the last session start time
    */
   static final String PREF_KEY_NEW_USER = "key_new_user";
-
-  static final String PREF_KEY_DEVICE_DATA_TRACKED = "key_device_data_col";
   /**
    * A constant value which denotes android on PureMetrics
    */
@@ -248,12 +256,28 @@ final class Constants {
    * PREFIX which denotes that the ID value is nothing but a random generated ID
    */
   static final String PREFIX_ID_GENERATED = "R-";
-
+  /**
+   * Preference file name for PureMetrics
+   */
   static final String SHARED_PREF_NAME = "pm-pref";
-
-  static final String PREF_KEY_SYNC_PENDING = "key_sync";
-
+  /**
+   * Device Attribute Constant denoting device network carrier if it is a phone
+   */
   static final String DA_CARRIER = "cn";
-
+  /**
+   * Device Attribute Constant denoting device network connectivity type
+   */
   static final String ATTR_CONNECTION_TYPE = "conn";
+  /**
+   * Device Attribute Constant denoting device screen density
+   */
+  static final String DA_DENSITY = "dis";
+  /**
+   * Device Attribute Constant denoting minimum device screen dimension
+   */
+  static final String DA_DISPLAY_MINPX = "sw";
+  /**
+   * Device Attribute Constant denoting device year class information
+   */
+  static final String DA_YEAR = "yc";
 }

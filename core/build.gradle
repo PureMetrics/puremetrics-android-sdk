@@ -6,8 +6,8 @@ android {
 
     defaultConfig {
         minSdkVersion rootProject.ext.minSdkVersion
-        versionCode 101
-        versionName "1.0.1"
+        versionCode 102
+        versionName "1.0.2"
     }
     buildTypes {
         release {
@@ -15,10 +15,15 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    lintOptions {
+        disable 'MissingPermission'
+    }
 }
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.facebook.device.yearclass:yearclass:1.0.1'
     testCompile 'junit:junit:4.12'
     provided 'com.android.support:appcompat-v7:23.4.0'
 }
@@ -36,7 +41,7 @@ ext {
     siteUrl = 'www.puremetrics.io'
     gitUrl = 'https://github.com/PureMetrics/puremetrics-android-sdk.git'
 
-    libraryVersion = '1.0.1'
+    libraryVersion = '1.0.2'
 
     developerId = 'puremetrics'
     developerName = 'Abhishek Nandi'
