@@ -41,7 +41,7 @@ ext {
     siteUrl = 'www.puremetrics.io'
     gitUrl = 'https://github.com/PureMetrics/puremetrics-android-sdk.git'
 
-    libraryVersion = '1.0.2'
+    libraryVersion = '1.0.3'
 
     developerId = 'puremetrics'
     developerName = 'Abhishek Nandi'
