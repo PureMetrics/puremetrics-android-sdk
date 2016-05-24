@@ -97,6 +97,10 @@ final class Constants {
    */
   static final String PREF_KEY_NEW_USER = "key_new_user";
   /**
+   * SharedPreference key used to store and retrieve the last known app version
+   */
+  static final String PREF_KEY_LAST_KNOWN_APP_VERSION = "key_lav";
+  /**
    * A constant value which denotes android on PureMetrics
    */
   static final int PLATFORM_ANDROID = 2;
@@ -241,6 +245,10 @@ final class Constants {
    */
   static final String EVENT_NAME_ACQUISITION = "acq";
   /**
+   * Event name for an acquisition of an old user
+   */
+  static final String EVENT_NAME_EXISTING_USER_ACQ = "eacq";
+  /**
    * PREFIX which denotes that the ID value is nothing but the IMEI number
    */
   static final String PREFIX_ID_IMEI = "I-";
@@ -280,4 +288,11 @@ final class Constants {
    * Device Attribute Constant denoting device year class information
    */
   static final String DA_YEAR = "yc";
+
+  static final String PREF_KEY_OLDUSER = "key_olduser";
+  /**
+   * Event Name for App Update
+   */
+  static final String EVENT_UPDATE = "upd";
+
 }

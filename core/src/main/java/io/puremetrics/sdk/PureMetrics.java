@@ -107,6 +107,7 @@ public final class PureMetrics {
 
     //start of tracking
     registerLifeCycleHandler(appContext);
+    checkForAppUpdate();
   }
 
   /**
@@ -425,7 +426,7 @@ public final class PureMetrics {
    * @param eventName  The name of the event
    * @param attributes A {@link HashMap} of the event attributes
    */
-  public static void trackEvent(String eventName, HashMap<String, Object> attributes) {
+  public static void trackEvent(String eventName, HashMap attributes) {
     if (!initialized()) {
       log(LOG_LEVEL.FATAL, "PureMetrics was not initialized. " +
               "Please add PureMetrics.withBuilder().setAppConfiguration().init(context)");
@@ -436,7 +437,11 @@ public final class PureMetrics {
       event_ss.put(Constants.ATTR_EVENT_NAME, eventName);
       event_ss.put(Constants.ATTR_TS, System.currentTimeMillis());
       if (null != attributes && attributes.size() > 0) {
-        event_ss.put(Constants.ATTR_EVENT_ATTR, new JSONObject(attributes));
+        try {
+          event_ss.put(Constants.ATTR_EVENT_ATTR, new JSONObject(attributes));
+        } catch (Throwable e) {
+          log(LOG_LEVEL.ERROR, "trackEvent", e);
+        }
       }
       TaskManager.getInstance().executeTask(new Runnable() {
         @Override
@@ -445,7 +450,7 @@ public final class PureMetrics {
         }
       });
     } catch (JSONException e) {
-      log(LOG_LEVEL.ERROR, "trackSessionStart", e);
+      log(LOG_LEVEL.ERROR, "trackEvent", e);
     }
   }
 
@@ -693,9 +698,46 @@ public final class PureMetrics {
    * Track an acquisition event for the user
    */
   private static void trackAcquisition() {
-    trackEvent(Constants.EVENT_NAME_ACQUISITION, null);
+    if (oldUser || isOldUser()) {
+      trackEvent(Constants.EVENT_NAME_EXISTING_USER_ACQ, null);
+    } else {
+      trackEvent(Constants.EVENT_NAME_ACQUISITION, null);
+    }
   }
 
+  /**
+   * Temporary boolean used in cases where SDK
+   * has not been initialized but the method has been called
+   */
+  private static boolean oldUser = false;
+
+  /**
+   * Set the current user an existing user.
+   */
+  public static void setExistingUser() {
+    oldUser = true;
+    if (!initialized()) {
+      log(LOG_LEVEL.DEBUG, "Not initialized yet. Will set a variable  and hope its picked up");
+      return;
+    }
+    synchronized (_INSTANCE.lock_sharedPref) {
+      _INSTANCE.preferences.edit().putBoolean(Constants.PREF_KEY_OLDUSER, true).apply();
+    }
+  }
+
+  /**
+   * Check to see if it is an existing user
+   *
+   * @return true if the user is an existing user, false otherwise
+   */
+  static boolean isOldUser() {
+    if (!initialized()) {
+      return false;
+    }
+    synchronized (_INSTANCE.lock_sharedPref) {
+      return _INSTANCE.preferences.getBoolean(Constants.PREF_KEY_OLDUSER, false);
+    }
+  }
   /**
    * Checks if {@link PureMetrics} was initialized or not
    *
@@ -1000,4 +1042,33 @@ public final class PureMetrics {
    * A boolean which denotes whether upload is in progress or not
    */
   static boolean _UPLOAD_IN_PROGRESS = false;
+
+  /**
+   * Checks with the version matches the previous version and tracks an update event
+   */
+  static void checkForAppUpdate() {
+    if (!initialized()) {
+      return;
+    }
+    synchronized (_INSTANCE.lock_sharedPref) {
+      try {
+        int lastVersion = _INSTANCE.preferences.getInt(Constants.PREF_KEY_LAST_KNOWN_APP_VERSION, -1);
+        int curVersion = _INSTANCE.appContext
+                .getPackageManager()
+                .getPackageInfo(_INSTANCE.appContext.getPackageName(), 0)
+                .versionCode;
+        if (curVersion != lastVersion) {
+          _INSTANCE.preferences.edit().putInt(
+                  Constants.PREF_KEY_LAST_KNOWN_APP_VERSION,
+                  curVersion).apply();
+          //it was never stored, its our 1st presence, lets store it
+          if (lastVersion != -1) {
+            trackEvent(Constants.EVENT_UPDATE, null);
+          }
+        }
+      } catch (PackageManager.NameNotFoundException e) {
+        //can never happen
+      }
+    }
+  }
 }
