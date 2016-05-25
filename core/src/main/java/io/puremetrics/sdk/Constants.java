@@ -277,6 +277,10 @@ final class Constants {
    */
   static final String ATTR_CONNECTION_TYPE = "conn";
   /**
+   * PureMetrics SDK version code
+   */
+  static final String ATTR_SDK_VERSION = "sdkv";
+  /**
    * Device Attribute Constant denoting device screen density
    */
   static final String DA_DENSITY = "dis";

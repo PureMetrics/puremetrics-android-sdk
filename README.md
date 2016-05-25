@@ -1,12 +1,14 @@
-![PureMetrics](https://raw.githubusercontent.com/PureMetrics/puremetrics-android-sdk/master/pm_logo.png)
+![PureMetrics](https://raw.githubusercontent.com/PureMetrics/puremetrics-android-sdk/master/images/pm_logo.png)
 PureMetrics Android SDK
 ========================
 This is the android SDK associated with [PureMetrics](http://www.puremetrics.io)
 
-[![Download](https://api.bintray.com/packages/puremetrics/maven/core/images/download.svg) ](https://bintray.com/puremetrics/maven/core/_latestVersion)
+[![Build Status](https://travis-ci.org/PureMetrics/puremetrics-android-sdk.svg?branch=master)](https://travis-ci.org/PureMetrics/puremetrics-android-sdk)[![Download](https://api.bintray.com/packages/puremetrics/maven/core/images/download.svg) ](https://bintray.com/puremetrics/maven/core/_latestVersion)
 
 ### PureMetrics is currently in PRIVATE BETA
 [Join](https://goo.gl/amyqCW) the waitlist and be notified for the preview
+
+PureMetrics uses ![Infer](https://raw.githubusercontent.com/PureMetrics/puremetrics-android-sdk/master/images/infer_logo.png)
 
 ##Licence
 ```

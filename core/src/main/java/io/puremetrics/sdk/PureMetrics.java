@@ -208,6 +208,9 @@ public final class PureMetrics {
    */
   static boolean AUTO_TRACKING_ENABLED = true;
 
+  /**
+   * The session duration
+   */
   static long _SESSION_DURATION = Constants.DEFAULT_SESSION_DURATION;
   /**
    * A string tag used for logging
@@ -217,7 +220,6 @@ public final class PureMetrics {
    * Currently set logging level for the SDK
    */
   private static LOG_LEVEL logLevel = LOG_LEVEL.WARN;
-
   /**
    * A Builder class for {@link PureMetrics}.
    * It provides a convinient way for setting the various properties of PureMetrics.
@@ -862,6 +864,7 @@ public final class PureMetrics {
       requestObject.put(Constants.ATTR_APP_VERSION_CODE, versionCode);
       requestObject.put(Constants.ATTR_APP_VERSION_NAME, versionName);
       requestObject.put(Constants.ATTR_CONNECTION_TYPE, Utils.getNetworkClass(appContext));
+      requestObject.put(Constants.ATTR_SDK_VERSION, BuildConfig.VERSION_CODE);
       String li = preferences.getString(Constants.PREF_KEY_LINKING_ID, null);
       if (!TextUtils.isEmpty(li)) {
         requestObject.put(Constants.ATTR_LI, li);
