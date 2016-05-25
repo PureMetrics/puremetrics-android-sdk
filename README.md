@@ -8,7 +8,6 @@ This is the android SDK associated with [PureMetrics](http://www.puremetrics.io)
 ### PureMetrics is currently in PRIVATE BETA
 [Join](https://goo.gl/amyqCW) the waitlist and be notified for the preview
 
-PureMetrics uses ![Infer](https://raw.githubusercontent.com/PureMetrics/puremetrics-android-sdk/master/images/infer_logo.png)
 
 ##Licence
 ```
