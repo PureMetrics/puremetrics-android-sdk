@@ -110,10 +110,7 @@ public final class PureMetrics {
     checkForAppUpdate();
   }
 
-  /**
-   * Check and see if its a new session or is an old session
-   */
-  static void checkAndTrackSession(Activity activity) {
+  static void checkAndTrackSession(HashMap map, boolean override) {
     if (!initialized()) {
       log(LOG_LEVEL.FATAL, "PureMetrics was not initialized. " +
               "Please add PureMetrics.withBuilder().setAppConfiguration().init(context)");
@@ -134,22 +131,28 @@ public final class PureMetrics {
       _INSTANCE.sessionId = curTime;
       _INSTANCE.saveNewSessionId(curTime);
       //if it a new session and auto tracking is enabled track a session start event
-      if (AUTO_TRACKING_ENABLED) {
-        Intent intent = activity.getIntent();
-        if (null != intent) {
-          Bundle extras = intent.getExtras();
-          if (null != extras) {
-            Set<String> keySet = extras.keySet();
-            HashMap map = new HashMap();
-            for (String key : keySet) {
-              map.put(key, extras.get(key));
-            }
-            trackSessionStart(map);
-          }
-        }
-        trackSessionStart();
+      if (AUTO_TRACKING_ENABLED || override) {
+        trackEvent(Constants.EVENT_NAME_SESSION_START, map);
       }
     }
+  }
+  /**
+   * Check and see if its a new session or is an old session
+   */
+  static void checkAndTrackSession(Activity activity) {
+    HashMap map = null;
+    Intent intent = activity.getIntent();
+    if (null != intent) {
+      Bundle extras = intent.getExtras();
+      if (null != extras) {
+        Set<String> keySet = extras.keySet();
+        map = new HashMap();
+        for (String key : keySet) {
+          map.put(key, extras.get(key));
+        }
+      }
+    }
+    checkAndTrackSession(map, false);
   }
 
   /**
@@ -667,10 +670,12 @@ public final class PureMetrics {
   /**
    * Explicitly track Session start.
    * Call this only when you have set {@link Builder#disableAutoTracking(boolean)} as true
+   *
    */
   public static void trackSessionStart() {
     trackSessionStart(null);
   }
+
 
   /**
    * Explicitly track Session start.
@@ -679,7 +684,7 @@ public final class PureMetrics {
    * @param extras An extras which need to be tracked which gives more insight regarding the source of launch
    */
   public static void trackSessionStart(HashMap extras) {
-    trackEvent(Constants.EVENT_NAME_SESSION_START, extras);
+    checkAndTrackSession(extras, true);
   }
 
   /**
