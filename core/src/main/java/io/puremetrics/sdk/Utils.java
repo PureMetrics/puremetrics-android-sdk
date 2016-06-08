@@ -94,7 +94,7 @@ final class Utils {
         String phoneId = manager.getDeviceId();
         if (phoneId != null && phoneId.length() > 0 && !INVALID_PHONE_IDS.contains(phoneId))
           return Constants.PREFIX_ID_IMEI + phoneId;
-        return phoneId;
+        return null;
       } catch (Throwable e) {
         //intentionally suppressed
       }
