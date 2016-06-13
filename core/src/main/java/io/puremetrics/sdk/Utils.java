@@ -30,6 +30,7 @@ package io.puremetrics.sdk;
 import android.Manifest;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -140,7 +141,7 @@ final class Utils {
     return Constants.PREFIX_ID_GENERATED + UUID.randomUUID().toString() + "-" + System.currentTimeMillis();
   }
 
-  static boolean uploadData(String authBytes, final String data) {
+  static boolean uploadData(String authBytes, final String data, boolean isDebug) {
 
     try {
       if (null == data) {
@@ -165,22 +166,25 @@ final class Utils {
       }
       String checksumString = hexString.toString();
       PureMetrics.log(PureMetrics.LOG_LEVEL.DEBUG, "RequestBody: " + data + " | Checksum: " + checksumString + " | " + authBytes);
-      return uploadDataInternal(authBytes, checksumString, data.getBytes("UTF-8"), 0);
+      return uploadDataInternal(authBytes, checksumString, data.getBytes("UTF-8"), 0, isDebug);
     } catch (Throwable e) {
       PureMetrics.log(PureMetrics.LOG_LEVEL.FATAL, "Failed to upload data", e);
     }
     return false;
   }
 
-  static boolean uploadDataInternal(String authBytes, String checksumString, byte[] data, int retryCount) throws IOException {
+  static boolean uploadDataInternal(String authBytes, String checksumString, byte[] data, int retryCount, boolean isDebug) throws IOException {
     boolean result = false;
     URL url = new URL("https://api.puremetrics.io/v1/track");
     HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
-    urlConnection.setRequestProperty("Authorization", "basic " + authBytes);
-    urlConnection.setRequestProperty("Content-MD5", checksumString);
-    urlConnection.setRequestProperty("Content-Type", "application/json;");
-    urlConnection.setRequestMethod("POST");
-    urlConnection.setRequestProperty("Connection", "close");
+    urlConnection.setRequestProperty(Constants.HEADER_AUTHORIZATION, Constants.HEADER_BASIC_AUTH_PREFIX + authBytes);
+    urlConnection.setRequestProperty(Constants.HEADER_CONTENTMD5, checksumString);
+    urlConnection.setRequestProperty(Constants.HEADER_CONTENT_TYPE, Constants.HEADER_CONTENT_TYPE_VALUE);
+    urlConnection.setRequestProperty(Constants.HEADER_CONNECTION, Constants.HEADER_CLOSE);
+    if (isDebug) {
+      urlConnection.setRequestProperty(Constants.HEADER_DEBUG, Constants.HEADER_DEBUG_VALUE);
+    }
+    urlConnection.setRequestMethod(Constants.REQUEST_METHOD_POST);
 
     urlConnection.setDoOutput(true);
     urlConnection.setUseCaches(false);
@@ -197,7 +201,7 @@ final class Utils {
     } else if (responseCode == 412) {
       PureMetrics.logAPIResponse("Upload API", responseCode, null, responseMessage);
       if (retryCount < 2) {
-        result = uploadDataInternal(authBytes, checksumString, data, ++retryCount);
+        result = uploadDataInternal(authBytes, checksumString, data, ++retryCount, isDebug);
       }
     }
     return result;
@@ -304,4 +308,13 @@ final class Utils {
     PureMetrics.log(PureMetrics.LOG_LEVEL.DEBUG, "Disabling network change listener");
   }
 
+  /**
+   * Determince whether this is DEBUG build or production build
+   *
+   * @param context An instance of the application {@link Context}
+   * @return true if the app is in debug mode, false otherwise
+   */
+  static boolean isDebugBuild(Context context) {
+    return (0 != (context.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE));
+  }
 }

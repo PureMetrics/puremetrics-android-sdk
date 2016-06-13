@@ -896,6 +896,7 @@ public final class PureMetrics {
           ConnectivityManager cm =
                   (ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
           NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+          boolean debugBuild = Utils.isDebugBuild(appContext);
           boolean isConnected = activeNetwork != null &&
                   activeNetwork.isConnectedOrConnecting();
           if (!isConnected) {
@@ -904,7 +905,7 @@ public final class PureMetrics {
           }
           String payload = prepareRequest();
           if (null != payload) {
-            boolean result = Utils.uploadData(authBytes, payload);
+            boolean result = Utils.uploadData(authBytes, payload, debugBuild);
             if (result) {
               Utils.disableNetworkListener(appContext);
               databaseHelper.clearData();
@@ -935,6 +936,7 @@ public final class PureMetrics {
         }
         trackDeviceProperties(Constants.DA_MAKE, Build.MANUFACTURER);
         trackDeviceProperties(Constants.DA_MODEL, Build.MODEL);
+        trackDeviceProperties(Constants.DA_BRAND, Build.BRAND);
         trackDeviceProperties(Constants.DA_OS_VERSION, Build.VERSION.SDK_INT);
         trackDeviceProperties(Constants.ATTR_PL, Constants.PLATFORM_ANDROID);
         Utils.trackAdvertisementIdIfPossible(appContext);

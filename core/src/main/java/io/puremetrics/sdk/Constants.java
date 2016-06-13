@@ -109,6 +109,10 @@ final class Constants {
    */
   static final String DA_MAKE = "ma";
   /**
+   * The device brand
+   */
+  static final String DA_BRAND = "br";
+  /**
    * The device model
    */
   static final String DA_MODEL = "mo";
@@ -298,5 +302,16 @@ final class Constants {
    * Event Name for App Update
    */
   static final String EVENT_UPDATE = "upd";
+
+  static final String HEADER_DEBUG = "debug";
+  static final String HEADER_DEBUG_VALUE = "true";
+  static final String HEADER_AUTHORIZATION = "Authorization";
+  static final String HEADER_CONTENTMD5 = "Content-MD5";
+  static final String HEADER_CONTENT_TYPE = "Content-Type";
+  static final String HEADER_CONTENT_TYPE_VALUE = "application/json;";
+  static final String HEADER_BASIC_AUTH_PREFIX = "basic ";
+  static final String REQUEST_METHOD_POST = "POST";
+  static final String HEADER_CONNECTION = "Connection";
+  static final String HEADER_CLOSE = "close";
 
 }
