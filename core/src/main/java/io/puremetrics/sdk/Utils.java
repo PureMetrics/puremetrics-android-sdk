@@ -32,6 +32,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
@@ -316,5 +317,17 @@ final class Utils {
    */
   static boolean isDebugBuild(Context context) {
     return (0 != (context.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE));
+  }
+
+  /**
+   * Determine the device type
+   *
+   * @param context An instance of the application {@link Context}
+   * @return returns "tablet" or "phone"
+   */
+  static String getDeviceType(Context context) {
+    return (context.getResources().getConfiguration().screenLayout
+            & Configuration.SCREENLAYOUT_SIZE_MASK)
+            >= Configuration.SCREENLAYOUT_SIZE_LARGE ? "tablet" : "phone";
   }
 }

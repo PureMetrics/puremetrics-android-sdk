@@ -939,6 +939,7 @@ public final class PureMetrics {
         trackDeviceProperties(Constants.DA_BRAND, Build.BRAND);
         trackDeviceProperties(Constants.DA_OS_VERSION, Build.VERSION.SDK_INT);
         trackDeviceProperties(Constants.ATTR_PL, Constants.PLATFORM_ANDROID);
+        trackDeviceProperties(Constants.EVENT_TYPE, Utils.getDeviceType(appContext));
         Utils.trackAdvertisementIdIfPossible(appContext);
         DisplayMetrics dm = Resources.getSystem().getDisplayMetrics();
         trackDeviceProperties(Constants.DA_DENSITY, dm.densityDpi);
