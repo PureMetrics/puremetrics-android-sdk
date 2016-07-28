@@ -6,7 +6,7 @@ This is the android SDK associated with [PureMetrics](http://www.puremetrics.io)
 [![Build Status](https://travis-ci.org/PureMetrics/puremetrics-android-sdk.svg?branch=master)](https://travis-ci.org/PureMetrics/puremetrics-android-sdk) [![Download](https://api.bintray.com/packages/puremetrics/maven/core/images/download.svg) ](https://bintray.com/puremetrics/maven/core/_latestVersion)
 
 ### PureMetrics is currently in PRIVATE BETA
-[Join](https://goo.gl/amyqCW) the waitlist and be notified for the preview
+[Join](https://goo.gl/musxNJ) the waitlist and be notified for the preview
 
 
 ##Licence

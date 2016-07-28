@@ -289,6 +289,10 @@ final class Constants {
    */
   static final String DA_DENSITY = "dis";
   /**
+   * Device Attribute Constant denoting wdith x height
+   */
+  static final String DA_DISPLAY_DIMENSION = "sd";
+  /**
    * Device Attribute Constant denoting minimum device screen dimension
    */
   static final String DA_DISPLAY_MINPX = "sw";
@@ -302,6 +306,66 @@ final class Constants {
    * Event Name for App Update
    */
   static final String EVENT_UPDATE = "upd";
+  /**
+   * Event name for Revenue event
+   */
+  static final String EVENT_REVENUE = "_rev";
+  /**
+   * Event name for Feature event
+   */
+  static final String EVENT_FEATURE = "_fe";
+  /**
+   * Revenue Event: value
+   */
+  static final String EVENT_REVENUE_VALUE = "_val";
+  /**
+   * Revenue Event: payment mode
+   */
+  static final String ATTR_REVENUE_PAYMENT_MODE = "_paym";
+  /**
+   * Revenue Event: discount code used
+   */
+  static final String ATTR_REVENUE_DISCOUNT_CODE = "_disc";
+  /**
+   * Reveune Event: Discount Value
+   */
+  static final String ATTR_REVENUE_DISCOUNT_VALUE = "_disv";
+  /**
+   * Revenue Event: Currency
+   */
+  static final String ATTR_REVENUE_CURRENCY = "_cur";
+  /**
+   * Revenue Event: Currency conversion value
+   */
+  static final String ATTR_REVENUE_CURRENCY_CONVERSION_VALUE = "_cconv";
+  /**
+   * Bundle extras which might have UTM tags
+   */
+  static final String UTM_EXTRAS = "utm";
+  /**
+   * App open type. Possible valus: App/Dialog/Widget
+   */
+  static final String ATTR_TYPE = "type";
+  /**
+   * Campaign which drove the app open
+   */
+  static final String ATTR_CAMPAIGN = "cmp";
+  /**
+   * Source of the campaign. Possible values: The push provider/Ad Network etc
+   */
+  static final String ATTR_SOURCE = "sr";
+  /**
+   * Campaign medium: Email/Notifications/Ads
+   */
+  static final String ATTR_MEDIUM = "md";
+  /**
+   * Deeplink for the campaign
+   */
+  static final String ATTR_DEEPLINK = "dl";
+  /**
+   * Any additional meta data
+   */
+  static final String ATTR_EXTRAS = "ex";
 
   static final String HEADER_DEBUG = "debug";
   static final String HEADER_DEBUG_VALUE = "true";
@@ -313,5 +377,4 @@ final class Constants {
   static final String REQUEST_METHOD_POST = "POST";
   static final String HEADER_CONNECTION = "Connection";
   static final String HEADER_CLOSE = "close";
-
 }

@@ -109,18 +109,19 @@ final class Utils {
     return packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY);
   }
 
+  @SuppressWarnings({"MissingPermission"})
   static String getWifiMac(Context appContext) {
-    if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-      try {
+    try {
+      if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
         if (SupportCompatV4.checkSelfPermission(appContext, Manifest.permission.ACCESS_WIFI_STATE)) {
           String macAddress = ((WifiManager) appContext.getSystemService(Context.WIFI_SERVICE)).getConnectionInfo().getMacAddress();
           if (null != macAddress && macAddress.length() > 0) {
             return Constants.PREFIX_ID_MAC_ADDRESS + macAddress;
           }
         }
-      } catch (RuntimeException e) {
-        //intentionally suppressed
       }
+    } catch (RuntimeException e) {
+      //intentionally suppressed
     }
     return null;
   }
@@ -154,8 +155,8 @@ final class Utils {
       // Use MD5 implementation from http://org.rodage.com/pub/java/security/MD5.java
       // This implementation does not throw NoSuchAlgorithm exceptions.
       MessageDigest messageDigest = new MD5();
-
-      byte[] digestedData = messageDigest.digest(data.getBytes("UTF-8"));
+      byte[] undigested = data.getBytes("UTF-8");
+      byte[] digestedData = messageDigest.digest(undigested);
 
       // Create Hex String
       StringBuilder hexString = new StringBuilder();
@@ -167,7 +168,7 @@ final class Utils {
       }
       String checksumString = hexString.toString();
       PureMetrics.log(PureMetrics.LOG_LEVEL.DEBUG, "RequestBody: " + data + " | Checksum: " + checksumString + " | " + authBytes);
-      return uploadDataInternal(authBytes, checksumString, data.getBytes("UTF-8"), 0, isDebug);
+      return uploadDataInternal(authBytes, checksumString, undigested, 0, isDebug);
     } catch (Throwable e) {
       PureMetrics.log(PureMetrics.LOG_LEVEL.FATAL, "Failed to upload data", e);
     }

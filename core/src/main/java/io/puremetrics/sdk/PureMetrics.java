@@ -39,6 +39,8 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.DisplayMetrics;
@@ -93,7 +95,7 @@ public final class PureMetrics {
     }
     String credentials = appId + ":" + appSecret;
     authBytes = Base64.encodeToString(credentials.getBytes(), Base64.NO_WRAP);
-    //TODO check for change in appId
+    //appID change is not a valid scenario
     //If appId changes drop DB
     appContext = context.getApplicationContext();
     preferences = appContext.getSharedPreferences(Constants.SHARED_PREF_NAME, Context.MODE_PRIVATE);
@@ -110,11 +112,19 @@ public final class PureMetrics {
     checkForAppUpdate();
   }
 
-  static void checkAndTrackSession(HashMap map, boolean override) {
+  static void checkAndTrackSession(HashMap<String, Object> map, boolean override) {
     if (!initialized()) {
       log(LOG_LEVEL.FATAL, "PureMetrics was not initialized. " +
               "Please add PureMetrics.withBuilder().setAppConfiguration().init(context)");
       return;
+    }
+    if (null != _INSTANCE.sessionExtras && _INSTANCE.sessionExtras.size() > 0) {
+      if (null == map) {
+        map = new HashMap<>();
+      }
+      map.putAll(_INSTANCE.sessionExtras);
+      //No need to track the same values again
+      _INSTANCE.sessionExtras = null;
     }
     long curTime = System.currentTimeMillis();
     long lastActiveTime = _INSTANCE.getLastActiveTime();
@@ -136,19 +146,76 @@ public final class PureMetrics {
       }
     }
   }
+
+  /**
+   * A {@link HashMap} which has the session start extras which were passed by the app
+   */
+  private HashMap<String, Object> sessionExtras = null;
+
+  /**
+   * Add meta data to the session stating details of the app launch like,
+   * whether it was launched from a deep link present in a campaign, notification etc
+   *
+   * @param source   Source of any campaign if the app was opened from a campaign
+   * @param medium   Medium of the campaign: email/notification/ads
+   * @param type     Type of session like if this is from the app or a floating bubble on screen
+   * @param campaign Campaign name if any
+   * @param deeplink Deeplink of the app launch if it was launched from a deeplink
+   * @param extras   {@link HashMap} of meta data related to app start. These are custom extras
+   */
+  public static void setAppOpenExtras(String source, String medium,
+                                      String type, String campaign,
+                                      String deeplink, HashMap<String, Object> extras) {
+    if (!initialized()) {
+      log(LOG_LEVEL.FATAL, "PureMetrics was not initialized. " +
+              "Please add PureMetrics.withBuilder().setAppConfiguration().init(context)");
+      return;
+    }
+    _INSTANCE.sessionExtras = new HashMap<>();
+    if (null != source) {
+      _INSTANCE.sessionExtras.put(Constants.ATTR_SOURCE, source);
+    }
+
+    if (null != medium) {
+      _INSTANCE.sessionExtras.put(Constants.ATTR_MEDIUM, medium);
+    }
+
+    if (null != type) {
+      _INSTANCE.sessionExtras.put(Constants.ATTR_TYPE, type);
+    }
+
+    if (null != campaign) {
+      _INSTANCE.sessionExtras.put(Constants.ATTR_CAMPAIGN, campaign);
+    }
+
+    if (null != deeplink) {
+      _INSTANCE.sessionExtras.put(Constants.ATTR_DEEPLINK, deeplink);
+    }
+
+    if (null != extras) {
+      _INSTANCE.sessionExtras.put(Constants.ATTR_EXTRAS, extras);
+    }
+  }
+
   /**
    * Check and see if its a new session or is an old session
    */
   static void checkAndTrackSession(Activity activity) {
-    HashMap map = null;
+    HashMap<String, Object> map = null;
     Intent intent = activity.getIntent();
     if (null != intent) {
       Bundle extras = intent.getExtras();
       if (null != extras) {
         Set<String> keySet = extras.keySet();
-        map = new HashMap();
+        map = new HashMap<>();
         for (String key : keySet) {
-          map.put(key, extras.get(key));
+          if (null == key) {
+            continue;
+          }
+          Object extraValue = extras.get(key);
+          if ((null != extraValue && extraValue instanceof String) || key.contains(Constants.UTM_EXTRAS)) {
+            map.put(key, extras.get(key));
+          }
         }
       }
     }
@@ -415,7 +482,7 @@ public final class PureMetrics {
    *
    * @param eventName The name of the event
    */
-  public static void trackEvent(String eventName) {
+  static void trackEvent(String eventName) {
     if (!initialized()) {
       log(LOG_LEVEL.FATAL, "PureMetrics was not initialized. " +
               "Please add PureMetrics.withBuilder().setAppConfiguration().init(context)");
@@ -431,19 +498,19 @@ public final class PureMetrics {
    * @param eventName  The name of the event
    * @param attributes A {@link HashMap} of the event attributes
    */
-  public static void trackEvent(String eventName, HashMap attributes) {
+  static void trackEvent(String eventName, HashMap<String, Object> attributes) {
     if (!initialized()) {
       log(LOG_LEVEL.FATAL, "PureMetrics was not initialized. " +
               "Please add PureMetrics.withBuilder().setAppConfiguration().init(context)");
       return;
     }
     try {
-      final JSONObject event_ss = new JSONObject();
-      event_ss.put(Constants.ATTR_EVENT_NAME, eventName);
-      event_ss.put(Constants.ATTR_TS, System.currentTimeMillis());
+      final JSONObject customEvent = new JSONObject();
+      customEvent.put(Constants.ATTR_EVENT_NAME, eventName);
+      customEvent.put(Constants.ATTR_TS, System.currentTimeMillis());
       if (null != attributes && attributes.size() > 0) {
         try {
-          event_ss.put(Constants.ATTR_EVENT_ATTR, new JSONObject(attributes));
+          customEvent.put(Constants.ATTR_EVENT_ATTR, new JSONObject(attributes));
         } catch (Throwable e) {
           log(LOG_LEVEL.ERROR, "trackEvent", e);
         }
@@ -451,7 +518,7 @@ public final class PureMetrics {
       TaskManager.getInstance().executeTask(new Runnable() {
         @Override
         public void run() {
-          _INSTANCE.databaseHelper.storeEvents(event_ss.toString());
+          _INSTANCE.databaseHelper.storeEvents(customEvent.toString());
         }
       });
     } catch (JSONException e) {
@@ -459,6 +526,58 @@ public final class PureMetrics {
     }
   }
 
+  /**
+   * Track revenue
+   *
+   * @param amount             The revenue amount
+   * @param currency           Currency value
+   * @param paymentMode        Payment mode
+   * @param discountValue      Discount amount if any
+   * @param discountCode       Discount code used
+   * @param currencyConversion The currency conversion value or 1 if no conversion is required
+   * @param attributes         Meta data associated with the revenue event.
+   *                           Example: name, product, category, location etc
+   */
+  public static void trackRevenue(float amount, @NonNull String currency, @NonNull String paymentMode,
+                                  float discountValue, @Nullable String discountCode,
+                                  float currencyConversion, @Nullable HashMap<String, Object> attributes) {
+    if (!initialized()) {
+      log(LOG_LEVEL.FATAL, "PureMetrics was not initialized. " +
+              "Please add PureMetrics.withBuilder().setAppConfiguration().init(context)");
+      return;
+    }
+    HashMap<String, Object> attrs = new HashMap<>();
+    if (null != attributes) {
+      attrs.putAll(attributes);
+    }
+    attrs.put(Constants.EVENT_REVENUE_VALUE, amount);
+    attrs.put(Constants.ATTR_REVENUE_CURRENCY, currency);
+    attrs.put(Constants.ATTR_REVENUE_CURRENCY_CONVERSION_VALUE, currencyConversion);
+    if (null != discountCode) {
+      attrs.put(Constants.ATTR_REVENUE_DISCOUNT_CODE, discountCode);
+    }
+    if (0 != discountValue) {
+      attrs.put(Constants.ATTR_REVENUE_DISCOUNT_VALUE, discountValue);
+    }
+    attrs.put(Constants.ATTR_REVENUE_PAYMENT_MODE, paymentMode);
+    trackEvent(Constants.EVENT_REVENUE, attrs);
+  }
+
+
+  /**
+   * Track features. These can be product search, product catalog, etc.
+   *
+   * @param featureName Name of the feature. Value cannot be null
+   * @param attrs       Feature attributes like A/B variations, promotional, experimental etc
+   */
+  public static void trackFeature(@NonNull String featureName, @Nullable HashMap<String, Object> attrs) {
+    if (!initialized()) {
+      log(LOG_LEVEL.FATAL, "PureMetrics was not initialized. " +
+              "Please add PureMetrics.withBuilder().setAppConfiguration().init(context)");
+      return;
+    }
+    trackEvent(Constants.EVENT_FEATURE, attrs);
+  }
   /**
    * Track a user property/trait. These are user level identifiers
    *
@@ -943,8 +1062,9 @@ public final class PureMetrics {
         Utils.trackAdvertisementIdIfPossible(appContext);
         DisplayMetrics dm = Resources.getSystem().getDisplayMetrics();
         trackDeviceProperties(Constants.DA_DENSITY, dm.densityDpi);
-        trackDeviceProperties(Constants.DA_DISPLAY_MINPX,
-                dm.widthPixels > dm.heightPixels ? dm.heightPixels : dm.widthPixels);
+        trackDeviceProperties(Constants.DA_DISPLAY_DIMENSION, dm.widthPixels + "x" + dm.heightPixels);
+        //TODO THE next attribute needs to be removed after 5 releases or 5 months. we will move to the new display dimension attribute
+        trackDeviceProperties(Constants.DA_DISPLAY_MINPX, dm.widthPixels > dm.heightPixels ? dm.heightPixels : dm.widthPixels);
         int year = YearClass.get(appContext);
         trackDeviceProperties(Constants.DA_YEAR, year);
       }
@@ -1006,7 +1126,7 @@ public final class PureMetrics {
   /**
    * Set user gender
    *
-   * @param gender gender value. Possible values {@link GENDER#FEMALE} and {@link GENDER#MALE}
+   * @param gender gender value. Possible values {@link GENDER#MALE} and {@link GENDER#FEMALE}
    */
   public static void setUserGender(final GENDER gender) {
     if (gender.compareTo(GENDER.FEMALE) == 0) {
