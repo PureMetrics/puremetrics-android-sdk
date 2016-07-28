@@ -566,21 +566,6 @@ public final class PureMetrics {
     trackEvent(Constants.EVENT_REVENUE, attrs);
   }
 
-
-  /**
-   * Track features. These can be product search, product catalog, etc.
-   *
-   * @param featureName Name of the feature. Value cannot be null
-   * @param attrs       Feature attributes like A/B variations, promotional, experimental etc
-   */
-  public static void trackFeature(@NonNull String featureName, @Nullable HashMap<String, Object> attrs) {
-    if (!initialized()) {
-      log(LOG_LEVEL.FATAL, "PureMetrics was not initialized. " +
-              "Please add PureMetrics.withBuilder().setAppConfiguration().init(context)");
-      return;
-    }
-    trackEvent(Constants.EVENT_FEATURE, attrs);
-  }
   /**
    * Track a user property/trait. These are user level identifiers
    *

@@ -315,10 +315,6 @@ final class Constants {
    */
   static final String EVENT_REVENUE = "_rev";
   /**
-   * Event name for Feature event
-   */
-  static final String EVENT_FEATURE = "_fe";
-  /**
    * Revenue Event: value
    */
   static final String EVENT_REVENUE_VALUE = "_val";
