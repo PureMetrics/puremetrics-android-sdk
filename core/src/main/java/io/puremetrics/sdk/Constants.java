@@ -97,6 +97,10 @@ final class Constants {
    */
   static final String PREF_KEY_NEW_USER = "key_new_user";
   /**
+   * SharedPreference key used to store if the device information has already been collected
+   */
+  static final String PREF_KEY_DEVICEIFO_COLLECTED = "key_dcollected";
+  /**
    * SharedPreference key used to store and retrieve the last known app version
    */
   static final String PREF_KEY_LAST_KNOWN_APP_VERSION = "key_lav";

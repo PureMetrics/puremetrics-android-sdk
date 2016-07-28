@@ -132,6 +132,9 @@ public final class PureMetrics {
 
     if (_INSTANCE.isFirstTimeUser()) {
       trackAcquisition();
+    }
+
+    if (!_INSTANCE.isDeviceInfoCollected()) {
       _INSTANCE.collectDeviceInfo();
     }
     Utils.enableNetworkListener(_INSTANCE.appContext);
@@ -946,6 +949,14 @@ public final class PureMetrics {
     synchronized (lock_sharedPref) {
       boolean res = preferences.getBoolean(Constants.PREF_KEY_NEW_USER, true);
       preferences.edit().putBoolean(Constants.PREF_KEY_NEW_USER, false).apply();
+      return res;
+    }
+  }
+
+  boolean isDeviceInfoCollected() {
+    synchronized (lock_sharedPref) {
+      boolean res = preferences.getBoolean(Constants.PREF_KEY_DEVICEIFO_COLLECTED, false);
+      preferences.edit().putBoolean(Constants.PREF_KEY_DEVICEIFO_COLLECTED, true).apply();
       return res;
     }
   }
