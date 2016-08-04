@@ -311,9 +311,17 @@ final class Constants {
    */
   static final String EVENT_UPDATE = "upd";
   /**
+   * Event name for Successful Transaction
+   */
+  static final String EVENT_TRANSACTION_SUCCESSFUL = "_trnss";
+  /**
    * Event name for Revenue event
    */
-  static final String EVENT_REVENUE = "_rev";
+  static final String EVENT_TRANSACTION_STARTED = "_trnst";
+  /**
+   * Event name for Revenue event
+   */
+  static final String EVENT_TRANSACTION_FAILED = "_trnf";
   /**
    * Revenue Event: value
    */
@@ -335,9 +343,17 @@ final class Constants {
    */
   static final String ATTR_REVENUE_CURRENCY = "_cur";
   /**
+   * Revenue Event: TransactionId
+   */
+  static final String ATTR_REVENUE_TRANSACTION_ID = "_tid";
+  /**
    * Revenue Event: Currency conversion value
    */
   static final String ATTR_REVENUE_CURRENCY_CONVERSION_VALUE = "_cconv";
+  /**
+   * Revenue Event: Transaction Failed reason
+   */
+  static final String ATTR_REVENUE_FAILED_REASON = "_rsn";
   /**
    * Bundle extras which might have UTM tags
    */

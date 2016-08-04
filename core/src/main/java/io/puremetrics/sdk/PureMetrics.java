@@ -530,8 +530,8 @@ public final class PureMetrics {
   }
 
   /**
-   * Track revenue
-   *
+   * Track a successful transaction.
+   * @param transactionId      An optional booking or transactionId
    * @param amount             The revenue amount
    * @param currency           Currency value
    * @param paymentMode        Payment mode
@@ -541,9 +541,9 @@ public final class PureMetrics {
    * @param attributes         Meta data associated with the revenue event.
    *                           Example: name, product, category, location etc
    */
-  public static void trackRevenue(float amount, @NonNull String currency, @NonNull String paymentMode,
-                                  float discountValue, @Nullable String discountCode,
-                                  float currencyConversion, @Nullable HashMap<String, Object> attributes) {
+  public static void trackTransactionSuccessful(@Nullable String transactionId, float amount, @NonNull String currency, @NonNull String paymentMode,
+                                                float discountValue, @Nullable String discountCode,
+                                                float currencyConversion, @Nullable HashMap<String, Object> attributes) {
     if (!initialized()) {
       log(LOG_LEVEL.FATAL, "PureMetrics was not initialized. " +
               "Please add PureMetrics.withBuilder().setAppConfiguration().init(context)");
@@ -554,6 +554,9 @@ public final class PureMetrics {
       attrs.putAll(attributes);
     }
     attrs.put(Constants.EVENT_REVENUE_VALUE, amount);
+    if (!TextUtils.isEmpty(transactionId)) {
+      attrs.put(Constants.ATTR_REVENUE_TRANSACTION_ID, transactionId);
+    }
     attrs.put(Constants.ATTR_REVENUE_CURRENCY, currency);
     attrs.put(Constants.ATTR_REVENUE_CURRENCY_CONVERSION_VALUE, currencyConversion);
     if (null != discountCode) {
@@ -563,7 +566,53 @@ public final class PureMetrics {
       attrs.put(Constants.ATTR_REVENUE_DISCOUNT_VALUE, discountValue);
     }
     attrs.put(Constants.ATTR_REVENUE_PAYMENT_MODE, paymentMode);
-    trackEvent(Constants.EVENT_REVENUE, attrs);
+    trackEvent(Constants.EVENT_TRANSACTION_SUCCESSFUL, attrs);
+  }
+
+  /**
+   * Track Failed transaction
+   *
+   * @param transactionId An optional booking or transactionId
+   * @param reason        Transaction failure reason
+   * @param attributes    Meta data associated with the revenue event.
+   */
+  public static void trackTransactionFailed(@Nullable String transactionId, @NonNull String reason, @Nullable HashMap<String, Object> attributes) {
+    if (!initialized()) {
+      log(LOG_LEVEL.FATAL, "PureMetrics was not initialized. " +
+              "Please add PureMetrics.withBuilder().setAppConfiguration().init(context)");
+      return;
+    }
+    HashMap<String, Object> attrs = new HashMap<>();
+    if (null != attributes) {
+      attrs.putAll(attributes);
+    }
+    if (!TextUtils.isEmpty(transactionId)) {
+      attrs.put(Constants.ATTR_REVENUE_TRANSACTION_ID, transactionId);
+    }
+    attrs.put(Constants.ATTR_REVENUE_FAILED_REASON, reason);
+    trackEvent(Constants.EVENT_TRANSACTION_FAILED, attrs);
+  }
+
+  /**
+   * Track Start of transaction
+   *
+   * @param transactionId An optional booking or transactionId
+   * @param attributes    Meta data associated with the revenue event.
+   */
+  public static void trackTransactionStarted(@Nullable String transactionId, @Nullable HashMap<String, Object> attributes) {
+    if (!initialized()) {
+      log(LOG_LEVEL.FATAL, "PureMetrics was not initialized. " +
+              "Please add PureMetrics.withBuilder().setAppConfiguration().init(context)");
+      return;
+    }
+    HashMap<String, Object> attrs = new HashMap<>();
+    if (null != attributes) {
+      attrs.putAll(attributes);
+    }
+    if (!TextUtils.isEmpty(transactionId)) {
+      attrs.put(Constants.ATTR_REVENUE_TRANSACTION_ID, transactionId);
+    }
+    trackEvent(Constants.EVENT_TRANSACTION_STARTED, attrs);
   }
 
   /**
