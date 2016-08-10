@@ -1,21 +1,21 @@
 /**
  * Modified MIT License
- * <p/>
+ * <p>
  * Copyright 2016 PureMetrics
- * <p/>
+ * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * <p/>
+ * <p>
  * 1. The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * <p/>
+ * <p>
  * 2. All copies of substantial portions of the Software may only be used in connection
  * with services provided by PureMetrics.
- * <p/>
+ * <p>
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -40,7 +40,6 @@ import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.DisplayMetrics;
@@ -52,6 +51,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.TimeZone;
@@ -196,7 +196,7 @@ public final class PureMetrics {
     }
 
     if (null != extras) {
-      _INSTANCE.sessionExtras.put(Constants.ATTR_EXTRAS, extras);
+      _INSTANCE.sessionExtras.put(Constants.ATTR_META, extras);
     }
   }
 
@@ -293,10 +293,11 @@ public final class PureMetrics {
    * Currently set logging level for the SDK
    */
   private static LOG_LEVEL logLevel = LOG_LEVEL.WARN;
+
   /**
    * A Builder class for {@link PureMetrics}.
    * It provides a convinient way for setting the various properties of PureMetrics.
-   *
+   * <p>
    * <strong>Usage:</strong>
    * <pre>
    * <code>
@@ -530,92 +531,6 @@ public final class PureMetrics {
   }
 
   /**
-   * Track a successful transaction.
-   * @param transactionId      An optional booking or transactionId
-   * @param amount             The revenue amount
-   * @param currency           Currency value
-   * @param paymentMode        Payment mode
-   * @param discountValue      Discount amount if any
-   * @param discountCode       Discount code used
-   * @param currencyConversion The currency conversion value or 1 if no conversion is required
-   * @param attributes         Meta data associated with the revenue event.
-   *                           Example: name, product, category, location etc
-   */
-  public static void trackTransactionSuccessful(@Nullable String transactionId, float amount, @NonNull String currency, @NonNull String paymentMode,
-                                                float discountValue, @Nullable String discountCode,
-                                                float currencyConversion, @Nullable HashMap<String, Object> attributes) {
-    if (!initialized()) {
-      log(LOG_LEVEL.FATAL, "PureMetrics was not initialized. " +
-              "Please add PureMetrics.withBuilder().setAppConfiguration().init(context)");
-      return;
-    }
-    HashMap<String, Object> attrs = new HashMap<>();
-    if (null != attributes) {
-      attrs.putAll(attributes);
-    }
-    attrs.put(Constants.EVENT_REVENUE_VALUE, amount);
-    if (!TextUtils.isEmpty(transactionId)) {
-      attrs.put(Constants.ATTR_REVENUE_TRANSACTION_ID, transactionId);
-    }
-    attrs.put(Constants.ATTR_REVENUE_CURRENCY, currency);
-    attrs.put(Constants.ATTR_REVENUE_CURRENCY_CONVERSION_VALUE, currencyConversion);
-    if (null != discountCode) {
-      attrs.put(Constants.ATTR_REVENUE_DISCOUNT_CODE, discountCode);
-    }
-    if (0 != discountValue) {
-      attrs.put(Constants.ATTR_REVENUE_DISCOUNT_VALUE, discountValue);
-    }
-    attrs.put(Constants.ATTR_REVENUE_PAYMENT_MODE, paymentMode);
-    trackEvent(Constants.EVENT_TRANSACTION_SUCCESSFUL, attrs);
-  }
-
-  /**
-   * Track Failed transaction
-   *
-   * @param transactionId An optional booking or transactionId
-   * @param reason        Transaction failure reason
-   * @param attributes    Meta data associated with the revenue event.
-   */
-  public static void trackTransactionFailed(@Nullable String transactionId, @NonNull String reason, @Nullable HashMap<String, Object> attributes) {
-    if (!initialized()) {
-      log(LOG_LEVEL.FATAL, "PureMetrics was not initialized. " +
-              "Please add PureMetrics.withBuilder().setAppConfiguration().init(context)");
-      return;
-    }
-    HashMap<String, Object> attrs = new HashMap<>();
-    if (null != attributes) {
-      attrs.putAll(attributes);
-    }
-    if (!TextUtils.isEmpty(transactionId)) {
-      attrs.put(Constants.ATTR_REVENUE_TRANSACTION_ID, transactionId);
-    }
-    attrs.put(Constants.ATTR_REVENUE_FAILED_REASON, reason);
-    trackEvent(Constants.EVENT_TRANSACTION_FAILED, attrs);
-  }
-
-  /**
-   * Track Start of transaction
-   *
-   * @param transactionId An optional booking or transactionId
-   * @param attributes    Meta data associated with the revenue event.
-   */
-  public static void trackTransactionStarted(@Nullable String transactionId, @Nullable HashMap<String, Object> attributes) {
-    if (!initialized()) {
-      log(LOG_LEVEL.FATAL, "PureMetrics was not initialized. " +
-              "Please add PureMetrics.withBuilder().setAppConfiguration().init(context)");
-      return;
-    }
-    HashMap<String, Object> attrs = new HashMap<>();
-    if (null != attributes) {
-      attrs.putAll(attributes);
-    }
-    if (!TextUtils.isEmpty(transactionId)) {
-      attrs.put(Constants.ATTR_REVENUE_TRANSACTION_ID, transactionId);
-    }
-    trackEvent(Constants.EVENT_TRANSACTION_STARTED, attrs);
-  }
-
-  /**
    * Track a user property/trait. These are user level identifiers
    *
    * @param userProperty  Name of the user property
@@ -826,12 +741,10 @@ public final class PureMetrics {
   /**
    * Explicitly track Session start.
    * Call this only when you have set {@link Builder#disableAutoTracking(boolean)} as true
-   *
    */
   public static void trackSessionStart() {
     trackSessionStart(null);
   }
-
 
   /**
    * Explicitly track Session start.
@@ -855,6 +768,44 @@ public final class PureMetrics {
     extras.put(Constants.EVENT_REFRRER, referrer);
     extras.put(Constants.EVENT_TYPE, type);
     trackSessionStart(extras);
+  }
+
+  /**
+   * Track start of a transaction
+   * @param order The {@link Order} for which the transaction started
+   */
+  public static void transactionStarted(@NonNull Order order) {
+    if (!initialized()) {
+      log(LOG_LEVEL.DEBUG, "Pure Metrics SDK Not initialized yet.");
+      return;
+    }
+    trackEvent(Constants.EVENT_TRANSACTION_STARTED, order.eventAttrs);
+  }
+
+  /**
+   * Track start of a transaction
+   *
+   * @param revenue The {@link Revenue} generated from a successful transaction
+   */
+  public static void transactionSuccessful(@NonNull Revenue revenue) {
+    if (!initialized()) {
+      log(LOG_LEVEL.DEBUG, "Pure Metrics SDK Not initialized yet.");
+      return;
+    }
+    trackEvent(Constants.EVENT_TRANSACTION_SUCCESSFUL, revenue.eventAttrs);
+  }
+
+  /**
+   * Track a failed transaction
+   *
+   * @param transaction A populated {@link FailedTransaction} object
+   */
+  public static void transactionFailed(@NonNull FailedTransaction transaction) {
+    if (!initialized()) {
+      log(LOG_LEVEL.DEBUG, "PureMetrics SDK not initialized yet");
+      return;
+    }
+    trackEvent(Constants.EVENT_TRANSACTION_FAILED, transaction.eventAttrs);
   }
 
   /**
@@ -901,6 +852,7 @@ public final class PureMetrics {
       return _INSTANCE.preferences.getBoolean(Constants.PREF_KEY_OLDUSER, false);
     }
   }
+
   /**
    * Checks if {@link PureMetrics} was initialized or not
    *
@@ -1044,6 +996,7 @@ public final class PureMetrics {
     }
     return null;
   }
+
   /**
    * Schedule a data upload
    */
@@ -1215,6 +1168,23 @@ public final class PureMetrics {
   }
 
   /**
+   * Sets the current users as an activated user
+   *
+   * @param attributes Optionally pass any meta data for activation
+   */
+  static void setActivated(HashMap<String, Object> attributes) {
+    //TODO add logic here also make it public when done
+  }
+
+  static void setAcquisitionData() {
+    //TODO pass any acquisition information here like install referrer also make it public when done
+  }
+
+  static void trackFeature() {
+    //TODO plan for feature tracking for growth metrics
+  }
+
+  /**
    * A boolean which denotes whether upload is in progress or not
    */
   static boolean _UPLOAD_IN_PROGRESS = false;
@@ -1244,6 +1214,400 @@ public final class PureMetrics {
         }
       } catch (PackageManager.NameNotFoundException e) {
         //can never happen
+      }
+    }
+  }
+
+  /**
+   * A Class that represents a single complete Order
+   */
+  public static class Order {
+
+    /**
+     * Event attributes
+     */
+    HashMap<String, Object> eventAttrs;
+
+    //constructor intentionally made private
+    private Order(HashMap<String, Object> eventAttrs) {
+      this.eventAttrs = eventAttrs;
+    }
+
+    /**
+     * Builder class for {@link Order} Object. Provides a convenient way to set
+     * the various fields of a {@link Order} and
+     * generate associated payload which PureMetrics SDK can process
+     */
+    public static class Builder {
+
+      private HashMap<String, Object> meta = null;
+      private HashMap<String, Object> params = null;
+      private ArrayList<JSONObject> products = null;
+
+      public Builder() {
+        params = new HashMap<>();
+        products = new ArrayList<>();
+      }
+
+      /**
+       * Set The transaction Id for the current transaction
+       *
+       * @param transactionId The transaction id to which the transaction belongs
+       * @return {@link PureMetrics.Order.Builder}
+       */
+      public Builder setTransactionId(String transactionId) {
+        params.put(Constants.ATTR_TRANSACTION_ID, transactionId);
+        return this;
+      }
+
+      /**
+       * Add the product information which is being purchased
+       *
+       * @param productId       The product Id
+       * @param productCategory Category of the product which is being purchased
+       * @param unitPrice       Unit price for the product
+       * @param discountedPrice Discounted Price for the product
+       * @param units           Number of units of the product being purchased
+       * @param currency        Optional field required when your transaction currency
+       *                        and product price currency is different
+       * @return {@link PureMetrics.Order.Builder}
+       */
+      public
+      @NonNull
+      Builder addProduct(String productId, String productCategory,
+                         long unitPrice, long discountedPrice, int units, String currency) {
+        try {
+          JSONObject product = new JSONObject();
+          product.put(Constants.ATTR_PRODUCT_ID, productId);
+          product.put(Constants.ATTR_CATEGORY_ID, productCategory);
+          product.put(Constants.ATTR_DISCOUNTED_PRICE, discountedPrice);
+          product.put(Constants.ATTR_UNIT_PRICE, unitPrice);
+          product.put(Constants.ATTR_UNIT_SOLD, units);
+          product.put(Constants.ATTR_CURRENCY, currency);
+          products.add(product);
+        } catch (JSONException e) {
+          log(LOG_LEVEL.ERROR, "PM: addProduct", e);
+        }
+        return this;
+      }
+
+      /**
+       * Add any additional information which you want to pass
+       *
+       * @param meta Metadata associated with the revenue event.
+       *             Example: name, product, category, location etc
+       * @return {@link PureMetrics.Order.Builder}
+       */
+      public
+      @NonNull
+      Builder addMeta(HashMap<String, Object> meta) {
+        if (null == this.meta) {
+          this.meta = new HashMap<>();
+        }
+        this.meta.putAll(meta);
+        return this;
+      }
+
+      /**
+       * Combine all of the options that have been set and return a new {@link Order} object
+       *
+       * @return {@link Order}
+       */
+      public
+      @NonNull
+      Order build() {
+        if (products.size() > 0) {
+          params.put(Constants.ATTR_PRODUCTS, products);
+        }
+        if (null != meta) {
+          params.put(Constants.ATTR_META, meta);
+        }
+        return new Order(params);
+      }
+    }
+  }
+
+  /**
+   * A Class that represents a single complete transaction
+   */
+  public static class Revenue {
+
+    /**
+     * Event attributes
+     */
+    HashMap<String, Object> eventAttrs;
+
+    /**
+     * Constructor intentionally made private to enforce builder
+     */
+    private Revenue(HashMap<String, Object> attrs) {
+      this.eventAttrs = attrs;
+    }
+
+    /**
+     * Builder class for {@link Revenue} Object. Provides a convenient way to set
+     * the various fields of a {@link Revenue} and
+     * generate associated payload which PureMetrics SDK can process
+     */
+    public static class Builder {
+
+      private HashMap<String, Object> meta = null;
+      private HashMap<String, Object> params = null;
+      private ArrayList<JSONObject> payments = null;
+
+      public Builder() {
+        params = new HashMap<>();
+        payments = new ArrayList<>();
+      }
+
+      /**
+       * Set The transaction Id for the current transaction
+       *
+       * @param transactionId The transaction id to which the transaction belongs
+       * @return {@link PureMetrics.Revenue.Builder}
+       */
+      public
+      @NonNull
+      Builder setTransactionId(@NonNull String transactionId) {
+        params.put(Constants.ATTR_TRANSACTION_ID, transactionId);
+        return this;
+      }
+
+      /**
+       * The ID using which the transaction can be identified in the payment provider's system.
+       * For example, In case of Stripe this is the 'balance_transaction' id
+       * which is returned with a charge response.
+       *
+       * @param transactionId id generated by the payment provider
+       * @return {@link PureMetrics.FailedTransaction.Builder}
+       */
+      public
+      @NonNull
+      Builder setPaymentProviderTransactionId(String transactionId) {
+        params.put(Constants.ATTR_PG_TRANS_ID, transactionId);
+        return this;
+      }
+
+      /**
+       * Set the Transaction Currency. There can be only a single currency for a single transaction.
+       *
+       * @param currency Currency value has to comply with
+       *                 <a href="http://www.iso.org/iso/home/standards/currency_codes.htm">
+       *                 ISO4217</a>,
+       * @return {@link PureMetrics.Revenue.Builder}
+       */
+      public
+      @NonNull
+      Builder setCurrency(@NonNull String currency) {
+        params.put(Constants.ATTR_CURRENCY, currency);
+        return this;
+      }
+
+      /**
+       * Add the discount which is applied to the transaction.
+       * This is optional but there can be only a single discount per transaction
+       *
+       * @param discountCode  Discount code used
+       * @param discountValue Discount amount if any
+       * @return {@link PureMetrics.Revenue.Builder}
+       */
+      public
+      @NonNull
+      Builder setDiscount(String discountCode, long discountValue) {
+        if (null != discountCode) {
+          params.put(Constants.ATTR_REVENUE_DISCOUNT_CODE, discountCode);
+        }
+        params.put(Constants.ATTR_REVENUE_DISCOUNT_VALUE, discountValue);
+        return this;
+      }
+
+      /**
+       * Add any additional information which you want to pass. This is optional
+       *
+       * @param meta Metadata associated with the revenue event.
+       *             Example: name, product, category, location etc
+       * @return {@link PureMetrics.Revenue.Builder}
+       */
+      public
+      @NonNull
+      Builder addMeta(HashMap<String, Object> meta) {
+        if (null == this.meta) {
+          this.meta = new HashMap<>();
+        }
+        this.meta.putAll(meta);
+        return this;
+      }
+
+      /**
+       * Add the Payment Details. If you are splitting the payment into wallets and cards etc,
+       * then add multiple payments with the amount specifically applied in that mode
+       *
+       * @param mode            Payment Mode
+       * @param convertedAmount Payment amount converted in the transaction currency
+       * @param fees            fess charged by the payment gateway if any
+       * @return {@link PureMetrics.Revenue.Builder}
+       */
+      public
+      @NonNull
+      Builder addPayment(@NonNull String mode, long convertedAmount, long fees) {
+        try {
+          JSONObject payment = new JSONObject();
+          payment.put(Constants.ATTR_PAYMENT_MODE, mode);
+          payment.put(Constants.ATTR_AMOUNT, convertedAmount);
+          payment.put(Constants.ATTR_FEES, fees);
+          payments.add(payment);
+        } catch (JSONException e) {
+          log(LOG_LEVEL.ERROR, "PM: addPayment", e);
+        }
+        return this;
+      }
+
+      /**
+       * Combine all of the options that have been set and return a new {@link Revenue} object
+       *
+       * @return {@link Revenue}
+       */
+      public
+      @NonNull
+      Revenue build() {
+        if (payments.size() > 0) {
+          params.put(Constants.ATTR_PAYMENTS, payments);
+        }
+        if (null != meta) {
+          params.put(Constants.ATTR_META, meta);
+        }
+        return new Revenue(params);
+      }
+    }
+  }
+
+  /**
+   * A Class that represents a single complete transaction
+   */
+  public static class FailedTransaction {
+
+    /**
+     * Event attributes
+     */
+    HashMap<String, Object> eventAttrs;
+
+    /**
+     * Constructor intentionally made private to enforce builder
+     */
+    private FailedTransaction(HashMap<String, Object> attrs) {
+      this.eventAttrs = attrs;
+    }
+
+    /**
+     * Builder class for {@link FailedTransaction} Object. Provides a convenient way to set
+     * the various fields of a {@link FailedTransaction} and
+     * generate associated payload which PureMetrics SDK can process
+     */
+    public static class Builder {
+
+      private HashMap<String, Object> meta = null;
+      private HashMap<String, Object> params = null;
+
+      public Builder() {
+        params = new HashMap<>();
+      }
+
+      /**
+       * Set The transaction Id for the current transaction
+       *
+       * @param transactionId The transaction id to which the transaction belongs
+       * @return {@link PureMetrics.FailedTransaction.Builder}
+       */
+      public
+      @NonNull
+      Builder setTransactionId(@NonNull String transactionId) {
+        params.put(Constants.ATTR_TRANSACTION_ID, transactionId);
+        return this;
+      }
+
+      /**
+       * The ID using which the transaction can be identified in the payment provider's system.
+       * For example, In case of Stripe this is the 'balance_transaction' id
+       * which is returned with a charge response.
+       *
+       * @param transactionId id generated by the payment provider
+       * @return {@link PureMetrics.FailedTransaction.Builder}
+       */
+      public
+      @NonNull
+      Builder setPaymentProviderTransactionId(String transactionId) {
+        params.put(Constants.ATTR_PG_TRANS_ID, transactionId);
+        return this;
+      }
+
+      /**
+       * Set the Transaction Currency. There can be only a single currency for a single transaction.
+       *
+       * @param currency Currency value has to comply with ISO4217,
+       * @return {@link PureMetrics.FailedTransaction.Builder}
+       */
+      public
+      @NonNull
+      Builder setCurrency(@NonNull String currency) {
+        params.put(Constants.ATTR_CURRENCY, currency);
+        return this;
+      }
+
+      /**
+       * Set the transaction for transaction as mentioned by the payment provider
+       *
+       * @param reason reason for transaction failure
+       * @return {@link PureMetrics.FailedTransaction.Builder}
+       */
+      public
+      @NonNull
+      Builder setFailureReason(@NonNull String reason) {
+        params.put(Constants.ATTR_REASON, reason);
+        return this;
+      }
+
+      /**
+       * Set the failed transaction amount
+       *
+       * @param amount The amount with which transaction was attempted
+       * @return {@link PureMetrics.FailedTransaction.Builder}
+       */
+      public
+      @NonNull
+      Builder setAmount(long amount) {
+        params.put(Constants.ATTR_AMOUNT, amount);
+        return this;
+      }
+
+      /**
+       * Add any additional information which you want to pass
+       *
+       * @param meta Metadata associated with the revenue event.
+       *             Example: name, product, category, location etc
+       * @return {@link PureMetrics.FailedTransaction.Builder}
+       */
+      public
+      @NonNull
+      Builder addMeta(HashMap<String, Object> meta) {
+        if (null == this.meta) {
+          this.meta = new HashMap<>();
+        }
+        this.meta.putAll(meta);
+        return this;
+      }
+
+      /**
+       * Combine all of the options that have been set and return a new {@link FailedTransaction} object
+       *
+       * @return {@link FailedTransaction}
+       */
+      public
+      @NonNull
+      FailedTransaction build() {
+        if (null != meta) {
+          params.put(Constants.ATTR_META, meta);
+        }
+        return new FailedTransaction(params);
       }
     }
   }

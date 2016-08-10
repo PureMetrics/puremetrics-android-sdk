@@ -315,45 +315,81 @@ final class Constants {
    */
   static final String EVENT_TRANSACTION_SUCCESSFUL = "_trnss";
   /**
-   * Event name for Revenue event
+   * Event name for Transaction Started
    */
   static final String EVENT_TRANSACTION_STARTED = "_trnst";
   /**
-   * Event name for Revenue event
+   * Event name for Transaction failed
    */
   static final String EVENT_TRANSACTION_FAILED = "_trnf";
   /**
    * Revenue Event: value
    */
-  static final String EVENT_REVENUE_VALUE = "_val";
+  static final String ATTR_AMOUNT = "amt";
+  /**
+   * Revenue Event: Product list
+   */
+  static final String ATTR_PRODUCTS = "prod";
+  /**
+   * Revenue Event: Product Id
+   */
+  static final String ATTR_PRODUCT_ID = "pid";
+  /**
+   * Revenue Event: Category ID
+   */
+  static final String ATTR_CATEGORY_ID = "cat";
+  /**
+   * Revenue Event: Discounted price a product
+   */
+  static final String ATTR_DISCOUNTED_PRICE = "dp";
+  /**
+   * Revenue Event: Attribute for Unit price of a product
+   */
+  static final String ATTR_UNIT_PRICE = "up";
+  /**
+   * Revenue Event: Attribute for Units Sold
+   */
+  static final String ATTR_UNIT_SOLD = "ut";
   /**
    * Revenue Event: payment mode
    */
-  static final String ATTR_REVENUE_PAYMENT_MODE = "_paym";
+  static final String ATTR_PAYMENT_MODE = "md";
+  /**
+   * Revenue event attribute which has the payment mode information
+   */
+  static final String ATTR_PAYMENTS = "pay";
+  /**
+   * Fees charged by the payment gateway
+   */
+  static final String ATTR_FEES = "fees";
   /**
    * Revenue Event: discount code used
    */
-  static final String ATTR_REVENUE_DISCOUNT_CODE = "_disc";
+  static final String ATTR_REVENUE_DISCOUNT_CODE = "disc";
   /**
    * Reveune Event: Discount Value
    */
-  static final String ATTR_REVENUE_DISCOUNT_VALUE = "_disv";
+  static final String ATTR_REVENUE_DISCOUNT_VALUE = "disv";
+  /**
+   * Additional meta data
+   */
+  static final String ATTR_META = "meta";
   /**
    * Revenue Event: Currency
    */
-  static final String ATTR_REVENUE_CURRENCY = "_cur";
+  static final String ATTR_CURRENCY = "cur";
   /**
    * Revenue Event: TransactionId
    */
-  static final String ATTR_REVENUE_TRANSACTION_ID = "_tid";
+  static final String ATTR_TRANSACTION_ID = "tid";
   /**
-   * Revenue Event: Currency conversion value
+   * Revenue event: Payment provider transaction id
    */
-  static final String ATTR_REVENUE_CURRENCY_CONVERSION_VALUE = "_cconv";
+  static final String ATTR_PG_TRANS_ID = "pgtid";
   /**
    * Revenue Event: Transaction Failed reason
    */
-  static final String ATTR_REVENUE_FAILED_REASON = "_rsn";
+  static final String ATTR_REASON = "rsn";
   /**
    * Bundle extras which might have UTM tags
    */
@@ -378,10 +414,6 @@ final class Constants {
    * Deeplink for the campaign
    */
   static final String ATTR_DEEPLINK = "dl";
-  /**
-   * Any additional meta data
-   */
-  static final String ATTR_EXTRAS = "ex";
 
   static final String HEADER_DEBUG = "debug";
   static final String HEADER_DEBUG_VALUE = "true";

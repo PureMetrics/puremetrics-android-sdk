@@ -25,11 +25,11 @@ task clean(type: Delete) {
 
 ext {
     minSdkVersion = 14
-    targetSdkVersion = 23
-    compileSdkVersion = 23
-    buildToolsVersion = '23.0.3'
-    sdkVersionName = '1.0.8'
-    sdkVersionCode = 108
+    targetSdkVersion = 24
+    compileSdkVersion = 24
+    buildToolsVersion = '24.0.1'
+    sdkVersionName = '1.0.9'
+    sdkVersionCode = 109
     sourceCompatibilityVersion = JavaVersion.VERSION_1_7
     targetCompatibilityVersion = JavaVersion.VERSION_1_7
 }
