@@ -5,6 +5,10 @@
 *.apk
 *.ap_
 
+*.lock
+
+_site
+
 # Files for the Dalvik VM
 *.dex
 
