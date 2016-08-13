@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
 
     /* Building the order */
     final PureMetrics.Order.Builder orderBuilder = new PureMetrics.Order.Builder()
-            .addProduct("SKUID1", "music", 200, 0, 1, "USD")
+            .addProduct("SKUID1", "music", 200, 200, 1, "USD")
             .setTransactionId(transactionId)
             .addMeta(meta);
 
