@@ -421,4 +421,6 @@ final class Constants {
   static final String REQUEST_METHOD_POST = "POST";
   static final String HEADER_CONNECTION = "Connection";
   static final String HEADER_CLOSE = "close";
+
+  static final String REPLACEMENT_CHAR = "�";
 }
