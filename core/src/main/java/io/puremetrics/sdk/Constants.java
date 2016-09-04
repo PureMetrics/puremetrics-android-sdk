@@ -335,10 +335,6 @@ final class Constants {
    */
   static final String ATTR_PRODUCT_ID = "pid";
   /**
-   * Revenue Event: Category ID
-   */
-  static final String ATTR_CATEGORY_ID = "cat";
-  /**
    * Revenue Event: Discounted price a product
    */
   static final String ATTR_DISCOUNTED_PRICE = "dp";

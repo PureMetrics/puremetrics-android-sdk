@@ -53,6 +53,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 
@@ -1264,7 +1265,7 @@ public final class PureMetrics {
        * Add the product information which is being purchased
        *
        * @param productId       The product Id
-       * @param productCategory Category of the product which is being purchased
+       * @param dimensions      Additional dimensions for the product, like category id, type etc
        * @param unitPrice       Unit price for the product
        * @param discountedPrice Discounted Price for the product
        * @param units           Number of units of the product being purchased
@@ -1274,12 +1275,18 @@ public final class PureMetrics {
        */
       public
       @NonNull
-      Builder addProduct(String productId, String productCategory,
+      Builder addProduct(String productId, Map<String, Object> dimensions,
                          long unitPrice, long discountedPrice, int units, String currency) {
         try {
           JSONObject product = new JSONObject();
           product.put(Constants.ATTR_PRODUCT_ID, productId);
-          product.put(Constants.ATTR_CATEGORY_ID, productCategory);
+          if (null != dimensions && dimensions.size() > 0) {
+            try {
+              product.put(Constants.ATTR_META, new JSONObject(dimensions));
+            } catch (Throwable e) {
+              log(LOG_LEVEL.ERROR, "addProduct", e);
+            }
+          }
           product.put(Constants.ATTR_DISCOUNTED_PRICE, discountedPrice);
           product.put(Constants.ATTR_UNIT_PRICE, unitPrice);
           product.put(Constants.ATTR_UNIT_SOLD, units);

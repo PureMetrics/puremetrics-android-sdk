@@ -25,9 +25,13 @@ public class MainActivity extends AppCompatActivity {
     meta.put("loyalty", 10);
     meta.put("channel", "ad");
 
+    HashMap<String, Object> productDim = new HashMap<>();
+    productDim.put("genre", "hip-hop");
+    productDim.put("category", "music");
+
     /* Building the order */
     final PureMetrics.Order.Builder orderBuilder = new PureMetrics.Order.Builder()
-            .addProduct("SKUID1", "music", 200, 200, 1, "USD")
+            .addProduct("SKUID1", productDim, 200, 200, 1, "USD")
             .setTransactionId(transactionId)
             .addMeta(meta);
 
