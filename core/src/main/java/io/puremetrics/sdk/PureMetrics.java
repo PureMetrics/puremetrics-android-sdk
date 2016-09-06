@@ -217,7 +217,7 @@ public final class PureMetrics {
             continue;
           }
           Object extraValue = extras.get(key);
-          if ((null != extraValue && extraValue instanceof String) || key.contains(Constants.UTM_EXTRAS)) {
+          if (null != extraValue && extraValue instanceof String && key.contains(Constants.UTM_EXTRAS)) {
             map.put(key, extras.get(key));
           }
         }
