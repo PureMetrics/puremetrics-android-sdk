@@ -132,6 +132,7 @@ final class Constants {
    */
   static final String REQUEST_METHOD_POST = "POST";
   static final String REPLACEMENT_CHAR = "�";
+  static final String UNKNOWN_VALUE = "unknown";
 
   private Constants() {
     //constructor intentionally made private
@@ -378,6 +379,32 @@ final class Constants {
      * Connection header value close
      */
     String CLOSE = "close";
+  }
+
+  /**
+   * Network type constants
+   */
+  interface NetworkType {
+    /**
+     * Wifi
+     */
+    String WIFI = "wifi";
+    /**
+     * 4G Network
+     */
+    String FOUR_G = "4g";
+    /**
+     * 3G Network
+     */
+    String THREE_G = "3g";
+    /**
+     * Not connected to any network
+     */
+    String NOT_CONNECTED = "not_connected";
+    /**
+     * 2G Network
+     */
+    String TWO_G = "2g";
   }
 
   static class Events {

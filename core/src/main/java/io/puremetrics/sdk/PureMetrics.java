@@ -77,15 +77,15 @@ public final class PureMetrics {
    * Disables auto tracking of sessions. No session related events will be tracked.
    * It has to be called implemented by the app
    */
-  static boolean AUTO_TRACKING_ENABLED = true;
+  private static boolean AUTO_TRACKING_ENABLED = true;
   /**
    * The session duration
    */
-  static long _SESSION_DURATION = Constants.DEFAULT_SESSION_DURATION;
+  private static long _SESSION_DURATION = Constants.DEFAULT_SESSION_DURATION;
   /**
    * A boolean which denotes whether upload is in progress or not
    */
-  static boolean _UPLOAD_IN_PROGRESS = false;
+  private static boolean _UPLOAD_IN_PROGRESS = false;
   /**
    * An insternal instance of {@link Builder} but this is set to NULL later
    * on since it is not required always
@@ -132,7 +132,6 @@ public final class PureMetrics {
    * The {@link SharedPreferences} which will be used
    */
   private SharedPreferences preferences;
-
   /**
    * Constructor
    *
@@ -756,7 +755,6 @@ public final class PureMetrics {
     if (!TextUtils.isEmpty(lastName)) {
       trackUserProperties(Constants.UserAttributes.LAST_NAME, lastName);
     }
-
   }
 
   /**

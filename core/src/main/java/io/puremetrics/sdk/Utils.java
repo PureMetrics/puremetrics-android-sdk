@@ -252,9 +252,9 @@ final class Utils {
       ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
       NetworkInfo info = cm.getActiveNetworkInfo();
       if (info == null || !info.isConnected())
-        return "not_connected"; //not connected
+        return Constants.NetworkType.NOT_CONNECTED; //not connected
       if (info.getType() == ConnectivityManager.TYPE_WIFI)
-        return "wifi";
+        return Constants.NetworkType.WIFI;
       if (info.getType() == ConnectivityManager.TYPE_MOBILE) {
         int networkType = info.getSubtype();
         switch (networkType) {
@@ -263,7 +263,7 @@ final class Utils {
           case TelephonyManager.NETWORK_TYPE_CDMA:
           case TelephonyManager.NETWORK_TYPE_1xRTT:
           case TelephonyManager.NETWORK_TYPE_IDEN: //api<8 : replace by 11
-            return "2g";
+            return Constants.NetworkType.TWO_G;
           case TelephonyManager.NETWORK_TYPE_UMTS:
           case TelephonyManager.NETWORK_TYPE_EVDO_0:
           case TelephonyManager.NETWORK_TYPE_EVDO_A:
@@ -273,17 +273,17 @@ final class Utils {
           case TelephonyManager.NETWORK_TYPE_EVDO_B: //api<9 : replace by 14
           case TelephonyManager.NETWORK_TYPE_EHRPD:  //api<11 : replace by 12
           case TelephonyManager.NETWORK_TYPE_HSPAP:  //api<13 : replace by 15
-            return "3g";
+            return Constants.NetworkType.THREE_G;
           case TelephonyManager.NETWORK_TYPE_LTE:    //api<11 : replace by 13
-            return "4g";
+            return Constants.NetworkType.FOUR_G;
           default:
-            return "unknown";
+            return Constants.UNKNOWN_VALUE;
         }
       }
     } catch (Throwable e) {
       //intentionally suppressed
     }
-    return "unknown";
+    return Constants.UNKNOWN_VALUE;
   }
 
   /**
@@ -297,7 +297,11 @@ final class Utils {
     } catch (Throwable e) {
       //intentionally left blank
     }
-    return "Unknown";
+    return Constants.UNKNOWN_VALUE;
+  }
+
+  static String trackInstallSource() {
+    return null;
   }
   /**
    * Enable the network change listener component.
