@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     productDim.put("genre", "hip-hop");
     productDim.put("category", "music");
 
+    PureMetrics.trackEvent("ProductViewed", productDim);
     /* Building the order */
     final PureMetrics.Order.Builder orderBuilder = new PureMetrics.Order.Builder()
             .addProduct("SKUID1", productDim, 200, 200, 1, "USD")
