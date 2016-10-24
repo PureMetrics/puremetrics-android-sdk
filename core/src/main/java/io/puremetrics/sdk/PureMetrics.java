@@ -418,6 +418,13 @@ public final class PureMetrics {
   }
 
   /**
+   * To be called from a Crash listener like the one in
+   * CrashlyticsListener#crashlyticsDidDetectCrashDuringPreviousExecution
+   */
+  public static void trackCrash() {
+    trackEvent(Constants.Events.CRASH);
+  }
+  /**
    * Track a user property/trait. These are user level identifiers
    *
    * @param userProperty  Name of the user property

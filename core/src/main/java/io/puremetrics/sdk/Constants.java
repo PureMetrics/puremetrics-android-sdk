@@ -421,6 +421,10 @@ final class Constants {
      * Event name for an acquisition of an old user
      */
     static final String EXISTING_USER_ACQ = "eacq";
+    /**
+     * Denotes a crash event
+     */
+    static final String CRASH = "_crash";
 
     private Events() {
     }
