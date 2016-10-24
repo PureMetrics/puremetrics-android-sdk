@@ -224,6 +224,10 @@ final class Constants {
      * Device Language
      */
     String LANGUAGE = "lang";
+    /**
+     * App installer package name/id
+     */
+    String INSTALLER = "installer";
   }
 
   /**

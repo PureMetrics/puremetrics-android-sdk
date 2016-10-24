@@ -1026,6 +1026,7 @@ public final class PureMetrics {
         int year = YearClass.get(appContext);
         trackDeviceProperties(Constants.DeviceAttributes.YEAR_CLASS, year);
         trackDeviceProperties(Constants.DeviceAttributes.LANGUAGE, Utils.getDeviceLanguage());
+        trackDeviceProperties(Constants.DeviceAttributes.INSTALLER, Utils.getInstallSource(appContext));
       }
     });
   }

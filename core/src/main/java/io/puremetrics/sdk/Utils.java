@@ -39,6 +39,7 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
+import android.text.TextUtils;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -300,8 +301,21 @@ final class Utils {
     return Constants.UNKNOWN_VALUE;
   }
 
-  static String trackInstallSource() {
-    return null;
+  /**
+   * Get Installer Id for the app
+   *
+   * @param context An instance of the application {@link Context}
+   * @return The installer Id of the installer for the app
+   */
+  static String getInstallSource(Context context) {
+    try {
+      PackageManager pm = context.getPackageManager();
+      String installerId = pm.getInstallerPackageName(context.getPackageName());
+      return TextUtils.isEmpty(installerId) ? Constants.UNKNOWN_VALUE : installerId;
+    } catch (Throwable e) {
+      //intentionally kept empty
+    }
+    return Constants.UNKNOWN_VALUE;
   }
   /**
    * Enable the network change listener component.
