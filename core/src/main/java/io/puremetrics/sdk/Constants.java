@@ -216,13 +216,13 @@ final class Constants {
      */
     String DISPLAY_DIMENSIONS = "sd";
     /**
-     * Device Attribute Constant denoting minimum device screen dimension
-     */
-    String DISPLAY_MINPX = "sw";
-    /**
      * Device Attribute Constant denoting device year class information
      */
     String YEAR_CLASS = "yc";
+    /**
+     * Device Language
+     */
+    String LANGUAGE = "lang";
   }
 
   /**

@@ -292,7 +292,12 @@ final class Utils {
    * @return The Default {@link Locale} language
    */
   static String getDeviceLanguage() {
-    return Locale.getDefault().getLanguage();
+    try {
+      return Locale.getDefault().getLanguage();
+    } catch (Throwable e) {
+      //intentionally left blank
+    }
+    return "Unknown";
   }
   /**
    * Enable the network change listener component.

@@ -1018,10 +1018,9 @@ public final class PureMetrics {
         DisplayMetrics dm = Resources.getSystem().getDisplayMetrics();
         trackDeviceProperties(Constants.DeviceAttributes.DENSITY, dm.densityDpi);
         trackDeviceProperties(Constants.DeviceAttributes.DISPLAY_DIMENSIONS, dm.widthPixels + "x" + dm.heightPixels);
-        //TODO THE next attribute needs to be removed after 5 releases or 5 months. we will move to the new display dimension attribute
-        trackDeviceProperties(Constants.DeviceAttributes.DISPLAY_MINPX, dm.widthPixels > dm.heightPixels ? dm.heightPixels : dm.widthPixels);
         int year = YearClass.get(appContext);
         trackDeviceProperties(Constants.DeviceAttributes.YEAR_CLASS, year);
+        trackDeviceProperties(Constants.DeviceAttributes.LANGUAGE, Utils.getDeviceLanguage());
       }
     });
   }
