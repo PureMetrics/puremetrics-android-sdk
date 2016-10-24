@@ -16,3 +16,4 @@
 #   public *;
 #}
 -keep public class * extends android.content.BroadcastReceiver
+-keep class com.google.android.gms.ads.identifier.AdvertisingIdClient

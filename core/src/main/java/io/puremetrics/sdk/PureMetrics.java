@@ -51,8 +51,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
@@ -63,6 +66,53 @@ import java.util.TimeZone;
 public final class PureMetrics {
 
   /**
+   * A string tag used for logging
+   */
+  private static final String TAG = "PureMetrics";
+  /**
+   * The singleton instance of {@link PureMetrics}
+   */
+  static PureMetrics _INSTANCE;
+  /**
+   * Disables auto tracking of sessions. No session related events will be tracked.
+   * It has to be called implemented by the app
+   */
+  static boolean AUTO_TRACKING_ENABLED = true;
+  /**
+   * The session duration
+   */
+  static long _SESSION_DURATION = Constants.DEFAULT_SESSION_DURATION;
+  /**
+   * A boolean which denotes whether upload is in progress or not
+   */
+  static boolean _UPLOAD_IN_PROGRESS = false;
+  /**
+   * An insternal instance of {@link Builder} but this is set to NULL later
+   * on since it is not required always
+   */
+  private static Builder mBuilder;
+  /**
+   * Currently set logging level for the SDK
+   */
+  private static LOG_LEVEL logLevel = LOG_LEVEL.WARN;
+  /**
+   * Maintains a counter for the current active activities
+   */
+  private static int ACTIVITY_COUNTER = 0;
+  /**
+   * Temporary boolean used in cases where SDK
+   * has not been initialized but the method has been called
+   */
+  private static boolean oldUser = false;
+  /**
+   * A mutex used for locking all {@link #preferences} operations
+   */
+  private final Object lock_sharedPref = new Object();
+  /**
+   * Current session Id
+   */
+  long sessionId;
+  /**
    * An instance of the application {@link Context}
    */
   private Context appContext;
@@ -71,13 +121,17 @@ public final class PureMetrics {
    */
   private DBHelper databaseHelper;
   /**
-   * Current session Id
-   */
-  long sessionId;
-  /**
    * Authorization Bytes to be added for Http BASIC Auth
    */
   private String authBytes;
+  /**
+   * A {@link HashMap} which has the session start extras which were passed by the app
+   */
+  private HashMap<String, Object> sessionExtras = null;
+  /**
+   * The {@link SharedPreferences} which will be used
+   */
+  private SharedPreferences preferences;
 
   /**
    * Constructor
@@ -110,7 +164,6 @@ public final class PureMetrics {
 
     //start of tracking
     registerLifeCycleHandler(appContext);
-    checkForAppUpdate();
   }
 
   static void checkAndTrackSession(HashMap<String, Object> map, boolean override) {
@@ -146,15 +199,10 @@ public final class PureMetrics {
       _INSTANCE.saveNewSessionId(curTime);
       //if it a new session and auto tracking is enabled track a session start event
       if (AUTO_TRACKING_ENABLED || override) {
-        trackEvent(Constants.EVENT_NAME_SESSION_START, map);
+        trackEvent(Constants.Events.SESSION_START, map);
       }
     }
   }
-
-  /**
-   * A {@link HashMap} which has the session start extras which were passed by the app
-   */
-  private HashMap<String, Object> sessionExtras = null;
 
   /**
    * Add meta data to the session stating details of the app launch like,
@@ -197,7 +245,7 @@ public final class PureMetrics {
     }
 
     if (null != extras) {
-      _INSTANCE.sessionExtras.put(Constants.ATTR_META, extras);
+      _INSTANCE.sessionExtras.put(Constants.Events.Attributes.META, extras);
     }
   }
 
@@ -227,21 +275,6 @@ public final class PureMetrics {
   }
 
   /**
-   * Registers the {@link ActivityLifecycleListener} for the app
-   *
-   * @param context An instance of the Activity or Application {@link Context}
-   */
-  private void registerLifeCycleHandler(Context context) {
-    this.appContext = context.getApplicationContext();
-    ((Application) appContext).registerActivityLifecycleCallbacks(new ActivityLifecycleListener());
-  }
-
-  /**
-   * The singleton instance of {@link PureMetrics}
-   */
-  static PureMetrics _INSTANCE;
-
-  /**
    * Get the current instance of {@link PureMetrics}.
    * Will return null if it has not been initialized
    *
@@ -250,19 +283,6 @@ public final class PureMetrics {
   static PureMetrics getInstance() {
     return _INSTANCE;
   }
-
-  /**
-   * Available logging levels for the SDK
-   */
-  public enum LOG_LEVEL {
-    NONE, FATAL, ERROR, WARN, INFO, DEBUG, VERBOSE
-  }
-
-  /**
-   * An insternal instance of {@link Builder} but this is set to NULL later
-   * on since it is not required always
-   */
-  private static Builder mBuilder;
 
   /**
    * Helper method to get an instance of the {@link Builder} to configure the SDK
@@ -274,134 +294,6 @@ public final class PureMetrics {
       mBuilder = new Builder();
     }
     return mBuilder;
-  }
-
-  /**
-   * Disables auto tracking of sessions. No session related events will be tracked.
-   * It has to be called implemented by the app
-   */
-  static boolean AUTO_TRACKING_ENABLED = true;
-
-  /**
-   * The session duration
-   */
-  static long _SESSION_DURATION = Constants.DEFAULT_SESSION_DURATION;
-  /**
-   * A string tag used for logging
-   */
-  private static final String TAG = "PureMetrics";
-  /**
-   * Currently set logging level for the SDK
-   */
-  private static LOG_LEVEL logLevel = LOG_LEVEL.WARN;
-
-  /**
-   * A Builder class for {@link PureMetrics}.
-   * It provides a convinient way for setting the various properties of PureMetrics.
-   * <p>
-   * <strong>Usage:</strong>
-   * <pre>
-   * <code>
-   *     PureMetrics.withBuilder()
-   *      .setAppConfiguration("abcdef", "123456")
-   *      .init(getApplicationContext());
-   * </code>
-   * </pre>
-   */
-  public static class Builder {
-    private String appId;
-    private String appSecret;
-    private boolean loggingLevelSet = false;
-
-    /**
-     * Set the Application Id &amp; Application secret associated with the app.
-     * As seen on the PureMetrics dashboard
-     *
-     * @param appId     a string representing the app id
-     * @param appSecret a string representation of the secret associated with the app id
-     * @return the current instance of {@link Builder}
-     */
-    public Builder setAppConfiguration(String appId, String appSecret) {
-      this.appId = appId;
-      this.appSecret = appSecret;
-      return this;
-    }
-
-    /**
-     * Set a custom Session durartion. The default duration is {@value Constants#DEFAULT_SESSION_DURATION}.
-     * The value specified cannot be less than or equal to 0
-     *
-     * @param timeInMillis The session duration to be set. Unit is milliseconds
-     * @return the current instance of {@link Builder}
-     */
-    public Builder setSessionDuration(long timeInMillis) {
-      if (timeInMillis > 0) {
-        _SESSION_DURATION = timeInMillis;
-      }
-      return this;
-    }
-
-    /**
-     * Disable auto session tracking
-     *
-     * @param disable set true if you want to disable auto session tracking
-     * @return the current instance of {@link Builder}
-     */
-    public Builder disableAutoTracking(boolean disable) {
-      AUTO_TRACKING_ENABLED = !disable;
-      return this;
-    }
-
-    /**
-     * Set the Logging level for the SDK
-     *
-     * @param logLevel The {@link LOG_LEVEL} associated for logging
-     * @return the current instance of {@link Builder}
-     */
-    public Builder setLoggingLevel(LOG_LEVEL logLevel) {
-      loggingLevelSet = true;
-      PureMetrics.logLevel = logLevel;
-      return this;
-    }
-
-    /**
-     * Initializes the SDK
-     *
-     * @param context An instance of the application {@link Context}
-     * @return A populated instance of PureMetrics.
-     */
-    public PureMetrics init(Context context) {
-      //may be this was called because of config changes
-      if (null != _INSTANCE) {
-        _INSTANCE.registerLifeCycleHandler(context);
-        return _INSTANCE;
-      }
-      setLoggingLevel(context);
-      _INSTANCE = new PureMetrics(context, appId, appSecret);
-      if (context instanceof Activity) {
-        log(LOG_LEVEL.WARN, "You should be PureMetrics#init() code in your Application class");
-      }
-      return _INSTANCE;
-    }
-
-    /**
-     * Sets the logging level for the PureMetrics logging level
-     *
-     * @param context An instance of the application {@link Context}
-     */
-    private void setLoggingLevel(Context context) {
-      if (!loggingLevelSet) {
-        try {
-          if ((context.getPackageManager().getPackageInfo(
-                  context.getPackageName(), 0).applicationInfo.flags &
-                  ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
-            PureMetrics.logLevel = LOG_LEVEL.NONE;
-          }
-        } catch (PackageManager.NameNotFoundException e) {
-          //intentionally suppressed
-        }
-      }
-    }
   }
 
   /**
@@ -461,11 +353,6 @@ public final class PureMetrics {
   }
 
   /**
-   * Maintains a counter for the current active activities
-   */
-  private static int ACTIVITY_COUNTER = 0;
-
-  /**
    * Call to increment a counter when an activity starts
    */
   static synchronized void startActivity() {
@@ -503,7 +390,7 @@ public final class PureMetrics {
    * @param eventName  The name of the event
    * @param attributes A {@link HashMap} of the event attributes
    */
-  static void trackEvent(String eventName, HashMap<String, Object> attributes) {
+  public static void trackEvent(String eventName, HashMap<String, Object> attributes) {
     if (!initialized()) {
       log(LOG_LEVEL.FATAL, "PureMetrics was not initialized. " +
               "Please add PureMetrics.withBuilder().setAppConfiguration().init(context)");
@@ -511,11 +398,11 @@ public final class PureMetrics {
     }
     try {
       final JSONObject customEvent = new JSONObject();
-      customEvent.put(Constants.ATTR_EVENT_NAME, eventName);
-      customEvent.put(Constants.ATTR_TS, System.currentTimeMillis());
+      customEvent.put(Constants.RequestAttributes.EVENT_NAME, eventName);
+      customEvent.put(Constants.RequestAttributes.TS, System.currentTimeMillis());
       if (null != attributes && attributes.size() > 0) {
         try {
-          customEvent.put(Constants.ATTR_EVENT_ATTR, new JSONObject(attributes));
+          customEvent.put(Constants.RequestAttributes.EVENT_ATTRS, new JSONObject(attributes));
         } catch (Throwable e) {
           log(LOG_LEVEL.ERROR, "trackEvent", e);
         }
@@ -738,7 +625,6 @@ public final class PureMetrics {
     });
   }
 
-
   /**
    * Explicitly track Session start.
    * Call this only when you have set {@link Builder#disableAutoTracking(boolean)} as true
@@ -780,7 +666,7 @@ public final class PureMetrics {
       log(LOG_LEVEL.DEBUG, "Pure Metrics SDK Not initialized yet.");
       return;
     }
-    trackEvent(Constants.EVENT_TRANSACTION_STARTED, order.eventAttrs);
+    trackEvent(Constants.Events.Transaction.STARTED, order.eventAttrs);
   }
 
   /**
@@ -793,7 +679,7 @@ public final class PureMetrics {
       log(LOG_LEVEL.DEBUG, "Pure Metrics SDK Not initialized yet.");
       return;
     }
-    trackEvent(Constants.EVENT_TRANSACTION_SUCCESSFUL, revenue.eventAttrs);
+    trackEvent(Constants.Events.Transaction.SUCCESSFUL, revenue.eventAttrs);
   }
 
   /**
@@ -806,7 +692,7 @@ public final class PureMetrics {
       log(LOG_LEVEL.DEBUG, "PureMetrics SDK not initialized yet");
       return;
     }
-    trackEvent(Constants.EVENT_TRANSACTION_FAILED, transaction.eventAttrs);
+    trackEvent(Constants.Events.Transaction.FAILED, transaction.eventAttrs);
   }
 
   /**
@@ -814,17 +700,11 @@ public final class PureMetrics {
    */
   private static void trackAcquisition() {
     if (oldUser || isOldUser()) {
-      trackEvent(Constants.EVENT_NAME_EXISTING_USER_ACQ, null);
+      trackEvent(Constants.Events.EXISTING_USER_ACQ, null);
     } else {
-      trackEvent(Constants.EVENT_NAME_ACQUISITION, null);
+      trackEvent(Constants.Events.ACQUISITION, null);
     }
   }
-
-  /**
-   * Temporary boolean used in cases where SDK
-   * has not been initialized but the method has been called
-   */
-  private static boolean oldUser = false;
 
   /**
    * Set the current user an existing user.
@@ -836,7 +716,7 @@ public final class PureMetrics {
       return;
     }
     synchronized (_INSTANCE.lock_sharedPref) {
-      _INSTANCE.preferences.edit().putBoolean(Constants.PREF_KEY_OLDUSER, true).apply();
+      _INSTANCE.preferences.edit().putBoolean(Constants.PREF_KEYS.OLDUSER, true).apply();
     }
   }
 
@@ -850,7 +730,7 @@ public final class PureMetrics {
       return false;
     }
     synchronized (_INSTANCE.lock_sharedPref) {
-      return _INSTANCE.preferences.getBoolean(Constants.PREF_KEY_OLDUSER, false);
+      return _INSTANCE.preferences.getBoolean(Constants.PREF_KEYS.OLDUSER, false);
     }
   }
 
@@ -864,14 +744,90 @@ public final class PureMetrics {
   }
 
   /**
-   * A mutex used for locking all {@link #preferences} operations
+   * Set the user name
+   *
+   * @param firstName First Name of the user
+   * @param lastName  Last Name of the user
    */
-  private final Object lock_sharedPref = new Object();
+  public static void setUserName(final String firstName, final String lastName) {
+    if (!TextUtils.isEmpty(firstName)) {
+      trackUserProperties(Constants.UserAttributes.FIRST_NAME, firstName);
+    }
+    if (!TextUtils.isEmpty(lastName)) {
+      trackUserProperties(Constants.UserAttributes.LAST_NAME, lastName);
+    }
+
+  }
 
   /**
-   * The {@link SharedPreferences} which will be used
+   * Set User Birthdate
+   *
+   * @param birthDate Set User Birthdate
    */
-  private SharedPreferences preferences;
+  public static void setUserBirthDate(Date birthDate) {
+    String formatted = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.ENGLISH)
+            .format(birthDate);
+    String compliantString = formatted.substring(0, 22) + ":" + formatted.substring(22);
+    trackUserProperties(Constants.UserAttributes.BIRTHDATE, compliantString);
+  }
+
+  /**
+   * Set user gender
+   *
+   * @param gender gender value.
+   */
+  public static void setUserGender(@NonNull final String gender) {
+    trackUserProperties(Constants.UserAttributes.GENDER, gender);
+  }
+
+  /**
+   * Set user User Id. This is the ID using which the user can be uniquely identified on your system
+   *
+   * @param userId The user id of the user
+   */
+  public static void setUserId(final String userId) {
+    //TODO if unique id changes, we might have to change anonymous id
+    if (initialized()) {
+      synchronized (_INSTANCE.lock_sharedPref) {
+        _INSTANCE.preferences.edit().putString(Constants.PREF_KEYS.LINKING_ID, userId).apply();
+      }
+    }
+    trackUserProperties(Constants.UserAttributes.USER_ID, userId);
+  }
+
+  /**
+   * Set user primary email id
+   *
+   * @param emailAddress The primary email address of the user
+   */
+  public static void setUserEmailAddress(final String emailAddress) {
+    if (!TextUtils.isEmpty(emailAddress))
+      trackUserProperties(Constants.UserAttributes.EMAIL, emailAddress);
+  }
+
+  /**
+   * Set User phone number
+   *
+   * @param phoneNumber The phone number of the user
+   */
+  public static void setUserPhoneNumber(final String phoneNumber) {
+    if (!TextUtils.isEmpty(phoneNumber))
+      trackUserProperties(Constants.UserAttributes.PHONE, phoneNumber);
+  }
+
+  static void setAcquisitionData() {
+    //TODO pass any acquisition information here like install referrer also make it public when done
+  }
+
+  /**
+   * Registers the {@link ActivityLifecycleListener} for the app
+   *
+   * @param context An instance of the Activity or Application {@link Context}
+   */
+  private void registerLifeCycleHandler(Context context) {
+    this.appContext = context.getApplicationContext();
+    ((Application) appContext).registerActivityLifecycleCallbacks(new ActivityLifecycleListener());
+  }
 
   /**
    * Get the last known sessionId
@@ -880,7 +836,7 @@ public final class PureMetrics {
    */
   long getLastKnownSessionId() {
     synchronized (lock_sharedPref) {
-      return preferences.getLong(Constants.PREF_KEY_LAST_SESSION_ID, 0);
+      return preferences.getLong(Constants.PREF_KEYS.LAST_SESSION_ID, 0);
     }
   }
 
@@ -891,7 +847,7 @@ public final class PureMetrics {
    */
   void saveNewSessionId(long sessionId) {
     synchronized (lock_sharedPref) {
-      preferences.edit().putLong(Constants.PREF_KEY_LAST_SESSION_ID, sessionId).apply();
+      preferences.edit().putLong(Constants.PREF_KEYS.LAST_SESSION_ID, sessionId).apply();
     }
   }
 
@@ -902,10 +858,10 @@ public final class PureMetrics {
    */
   String getDeviceId() {
     synchronized (lock_sharedPref) {
-      String deviceId = preferences.getString(Constants.PREF_KEY_DEVICE_ID, null);
+      String deviceId = preferences.getString(Constants.PREF_KEYS.DEVICE_ID, null);
       if (null == deviceId) {
         deviceId = Utils.getDeviceId(appContext);
-        preferences.edit().putString(Constants.PREF_KEY_DEVICE_ID, deviceId).apply();
+        preferences.edit().putString(Constants.PREF_KEYS.DEVICE_ID, deviceId).apply();
       }
       return deviceId;
     }
@@ -918,10 +874,10 @@ public final class PureMetrics {
    */
   String getAnonymousId() {
     synchronized (lock_sharedPref) {
-      String id = preferences.getString(Constants.PREF_KEY_ANONYMOUS_ID, null);
+      String id = preferences.getString(Constants.PREF_KEYS.ANONYMOUS_ID, null);
       if (null == id) {
         id = Utils.generateRandomId();
-        preferences.edit().putString(Constants.PREF_KEY_ANONYMOUS_ID, id).apply();
+        preferences.edit().putString(Constants.PREF_KEYS.ANONYMOUS_ID, id).apply();
       }
       return id;
     }
@@ -934,16 +890,16 @@ public final class PureMetrics {
    */
   boolean isFirstTimeUser() {
     synchronized (lock_sharedPref) {
-      boolean res = preferences.getBoolean(Constants.PREF_KEY_NEW_USER, true);
-      preferences.edit().putBoolean(Constants.PREF_KEY_NEW_USER, false).apply();
+      boolean res = preferences.getBoolean(Constants.PREF_KEYS.IS_NEW_USER, true);
+      preferences.edit().putBoolean(Constants.PREF_KEYS.IS_NEW_USER, false).apply();
       return res;
     }
   }
 
   boolean isDeviceInfoCollected() {
     synchronized (lock_sharedPref) {
-      boolean res = preferences.getBoolean(Constants.PREF_KEY_DEVICEIFO_COLLECTED, false);
-      preferences.edit().putBoolean(Constants.PREF_KEY_DEVICEIFO_COLLECTED, true).apply();
+      boolean res = preferences.getBoolean(Constants.PREF_KEYS.DEVICEINFO_COLLECTED, false);
+      preferences.edit().putBoolean(Constants.PREF_KEYS.DEVICEINFO_COLLECTED, true).apply();
       return res;
     }
   }
@@ -962,15 +918,15 @@ public final class PureMetrics {
       boolean sendData = false;
       if (null != da) {
         sendData = true;
-        requestObject.put(Constants.ATTR_DA, da);
+        requestObject.put(Constants.RequestAttributes.DA, da);
       }
       if (null != da) {
         sendData = true;
-        requestObject.put(Constants.ATTR_UA, ua);
+        requestObject.put(Constants.RequestAttributes.UA, ua);
       }
       if (null != e) {
         sendData = true;
-        requestObject.put(Constants.ATTR_SESSION, e);
+        requestObject.put(Constants.RequestAttributes.SESSION, e);
       }
       if (!sendData) {
         return null;
@@ -978,18 +934,18 @@ public final class PureMetrics {
       PackageInfo pInfo = appContext.getPackageManager().getPackageInfo(appContext.getPackageName(), 0);
       String versionName = pInfo.versionName;
       int versionCode = pInfo.versionCode;
-      requestObject.put(Constants.ATTR_AI, getAnonymousId());
-      requestObject.put(Constants.ATTR_DI, getDeviceId());
-      requestObject.put(Constants.ATTR_TS, System.currentTimeMillis());
-      requestObject.put(Constants.ATTR_TZ, TimeZone.getDefault().getID());
-      requestObject.put(Constants.ATTR_PL, Constants.PLATFORM_ANDROID);
+      requestObject.put(Constants.RequestAttributes.AI, getAnonymousId());
+      requestObject.put(Constants.RequestAttributes.DI, getDeviceId());
+      requestObject.put(Constants.RequestAttributes.TS, System.currentTimeMillis());
+      requestObject.put(Constants.RequestAttributes.TZ, TimeZone.getDefault().getID());
+      requestObject.put(Constants.RequestAttributes.PL, Constants.PLATFORM_VALUE);
       requestObject.put(Constants.ATTR_APP_VERSION_CODE, versionCode);
       requestObject.put(Constants.ATTR_APP_VERSION_NAME, versionName);
       requestObject.put(Constants.ATTR_CONNECTION_TYPE, Utils.getNetworkClass(appContext));
       requestObject.put(Constants.ATTR_SDK_VERSION, BuildConfig.VERSION_CODE);
-      String li = preferences.getString(Constants.PREF_KEY_LINKING_ID, null);
+      String li = preferences.getString(Constants.PREF_KEYS.LINKING_ID, null);
       if (!TextUtils.isEmpty(li)) {
-        requestObject.put(Constants.ATTR_LI, li);
+        requestObject.put(Constants.RequestAttributes.LI, li);
       }
       return requestObject.toString();
     } catch (Throwable e) {
@@ -1050,22 +1006,22 @@ public final class PureMetrics {
       public void run() {
         String carrier = Utils.getCarrierName(appContext);
         if (!TextUtils.isEmpty(carrier)) {
-          trackDeviceProperties(Constants.DA_CARRIER, carrier);
+          trackDeviceProperties(Constants.DeviceAttributes.CARRIER, carrier);
         }
-        trackDeviceProperties(Constants.DA_MAKE, Build.MANUFACTURER);
-        trackDeviceProperties(Constants.DA_MODEL, Build.MODEL);
-        trackDeviceProperties(Constants.DA_BRAND, Build.BRAND);
-        trackDeviceProperties(Constants.DA_OS_VERSION, Build.VERSION.SDK_INT);
-        trackDeviceProperties(Constants.ATTR_PL, Constants.PLATFORM_ANDROID);
+        trackDeviceProperties(Constants.DeviceAttributes.MAKE, Build.MANUFACTURER);
+        trackDeviceProperties(Constants.DeviceAttributes.MODEL, Build.MODEL);
+        trackDeviceProperties(Constants.DeviceAttributes.BRAND, Build.BRAND);
+        trackDeviceProperties(Constants.DeviceAttributes.OS_VERSION, Build.VERSION.SDK_INT);
+        trackDeviceProperties(Constants.RequestAttributes.PL, Constants.PLATFORM_VALUE);
         trackDeviceProperties(Constants.EVENT_TYPE, Utils.getDeviceType(appContext));
         Utils.trackAdvertisementIdIfPossible(appContext);
         DisplayMetrics dm = Resources.getSystem().getDisplayMetrics();
-        trackDeviceProperties(Constants.DA_DENSITY, dm.densityDpi);
-        trackDeviceProperties(Constants.DA_DISPLAY_DIMENSION, dm.widthPixels + "x" + dm.heightPixels);
+        trackDeviceProperties(Constants.DeviceAttributes.DENSITY, dm.densityDpi);
+        trackDeviceProperties(Constants.DeviceAttributes.DISPLAY_DIMENSIONS, dm.widthPixels + "x" + dm.heightPixels);
         //TODO THE next attribute needs to be removed after 5 releases or 5 months. we will move to the new display dimension attribute
-        trackDeviceProperties(Constants.DA_DISPLAY_MINPX, dm.widthPixels > dm.heightPixels ? dm.heightPixels : dm.widthPixels);
+        trackDeviceProperties(Constants.DeviceAttributes.DISPLAY_MINPX, dm.widthPixels > dm.heightPixels ? dm.heightPixels : dm.widthPixels);
         int year = YearClass.get(appContext);
-        trackDeviceProperties(Constants.DA_YEAR, year);
+        trackDeviceProperties(Constants.DeviceAttributes.YEAR_CLASS, year);
       }
     });
   }
@@ -1075,7 +1031,7 @@ public final class PureMetrics {
    */
   void setLastActiveTime() {
     synchronized (lock_sharedPref) {
-      preferences.edit().putLong(Constants.PREF_KEY_LAST_ACTIVE_TIME, System.currentTimeMillis()).apply();
+      preferences.edit().putLong(Constants.PREF_KEYS.LAST_ACTIVE_TIME, System.currentTimeMillis()).apply();
     }
   }
 
@@ -1086,135 +1042,122 @@ public final class PureMetrics {
    */
   long getLastActiveTime() {
     synchronized (lock_sharedPref) {
-      return preferences.getLong(Constants.PREF_KEY_LAST_ACTIVE_TIME, 0);
+      return preferences.getLong(Constants.PREF_KEYS.LAST_ACTIVE_TIME, 0);
     }
   }
 
   /**
-   * Set the user name
-   *
-   * @param firstName First Name of the user
-   * @param lastName  Last Name of the user
+   * Available logging levels for the SDK
    */
-  public static void setUserName(final String firstName, final String lastName) {
-    if (!TextUtils.isEmpty(firstName)) {
-      trackUserProperties(Constants.UA_FNAME, firstName);
+  public enum LOG_LEVEL {
+    NONE, FATAL, ERROR, WARN, INFO, DEBUG, VERBOSE
+  }
+
+  /**
+   * A Builder class for {@link PureMetrics}.
+   * It provides a convinient way for setting the various properties of PureMetrics.
+   * <p>
+   * <strong>Usage:</strong>
+   * <pre>
+   * <code>
+   *     PureMetrics.withBuilder()
+   *      .setAppConfiguration("abcdef", "123456")
+   *      .init(getApplicationContext());
+   * </code>
+   * </pre>
+   */
+  public static class Builder {
+    private String appId;
+    private String appSecret;
+    private boolean loggingLevelSet = false;
+
+    /**
+     * Set the Application Id &amp; Application secret associated with the app.
+     * As seen on the PureMetrics dashboard
+     *
+     * @param appId     a string representing the app id
+     * @param appSecret a string representation of the secret associated with the app id
+     * @return the current instance of {@link Builder}
+     */
+    public Builder setAppConfiguration(String appId, String appSecret) {
+      this.appId = appId;
+      this.appSecret = appSecret;
+      return this;
     }
-    if (!TextUtils.isEmpty(lastName)) {
-      trackUserProperties(Constants.UA_LNAME, lastName);
-    }
 
-  }
-
-  /**
-   * Set the user age
-   *
-   * @param age Age of the user
-   */
-  public static void setUserAge(int age) {
-    trackUserProperties(Constants.UA_AGE, age);
-  }
-
-  /**
-   * User Gender identifier
-   */
-  public enum GENDER {
-    FEMALE, MALE
-  }
-
-  /**
-   * Set user gender
-   *
-   * @param gender gender value. Possible values {@link GENDER#MALE} and {@link GENDER#FEMALE}
-   */
-  public static void setUserGender(final GENDER gender) {
-    if (gender.compareTo(GENDER.FEMALE) == 0) {
-      trackUserProperties(Constants.UA_GENDER, Constants.UA_GENDER_FEMALE);
-    } else {
-      trackUserProperties(Constants.UA_GENDER, Constants.UA_GENDER_MALE);
-    }
-  }
-
-  /**
-   * Set user User Id. This is the ID using which the user can be uniquely identified on your system
-   *
-   * @param userId The user id of the user
-   */
-  public static void setUserId(final String userId) {
-    //TODO if unique id changes, we might have to change anonymous id
-    if (initialized()) {
-      synchronized (_INSTANCE.lock_sharedPref) {
-        _INSTANCE.preferences.edit().putString(Constants.PREF_KEY_LINKING_ID, userId).apply();
+    /**
+     * Set a custom Session durartion. The default duration is {@value Constants#DEFAULT_SESSION_DURATION}.
+     * The value specified cannot be less than or equal to 0
+     *
+     * @param timeInMillis The session duration to be set. Unit is milliseconds
+     * @return the current instance of {@link Builder}
+     */
+    public Builder setSessionDuration(long timeInMillis) {
+      if (timeInMillis > 0) {
+        _SESSION_DURATION = timeInMillis;
       }
+      return this;
     }
-    trackUserProperties(Constants.UA_USER_ID, userId);
-  }
 
-  /**
-   * Set user primary email id
-   *
-   * @param emailAddress The primary email address of the user
-   */
-  public static void setUserEmailAddress(final String emailAddress) {
-    if (!TextUtils.isEmpty(emailAddress)) trackUserProperties(Constants.UA_EMAIL, emailAddress);
-  }
-
-  /**
-   * Set User phone number
-   *
-   * @param phoneNumber The phone number of the user
-   */
-  public static void setUserPhoneNumber(final String phoneNumber) {
-    if (!TextUtils.isEmpty(phoneNumber)) trackUserProperties(Constants.UA_PHONE, phoneNumber);
-  }
-
-  /**
-   * Sets the current users as an activated user
-   *
-   * @param attributes Optionally pass any meta data for activation
-   */
-  static void setActivated(HashMap<String, Object> attributes) {
-    //TODO add logic here also make it public when done
-  }
-
-  static void setAcquisitionData() {
-    //TODO pass any acquisition information here like install referrer also make it public when done
-  }
-
-  static void trackFeature() {
-    //TODO plan for feature tracking for growth metrics
-  }
-
-  /**
-   * A boolean which denotes whether upload is in progress or not
-   */
-  static boolean _UPLOAD_IN_PROGRESS = false;
-
-  /**
-   * Checks with the version matches the previous version and tracks an update event
-   */
-  static void checkForAppUpdate() {
-    if (!initialized()) {
-      return;
+    /**
+     * Disable auto session tracking
+     *
+     * @param disable set true if you want to disable auto session tracking
+     * @return the current instance of {@link Builder}
+     */
+    public Builder disableAutoTracking(boolean disable) {
+      AUTO_TRACKING_ENABLED = !disable;
+      return this;
     }
-    synchronized (_INSTANCE.lock_sharedPref) {
-      try {
-        int lastVersion = _INSTANCE.preferences.getInt(Constants.PREF_KEY_LAST_KNOWN_APP_VERSION, -1);
-        int curVersion = _INSTANCE.appContext
-                .getPackageManager()
-                .getPackageInfo(_INSTANCE.appContext.getPackageName(), 0)
-                .versionCode;
-        if (curVersion != lastVersion) {
-          _INSTANCE.preferences.edit().putInt(
-                  Constants.PREF_KEY_LAST_KNOWN_APP_VERSION,
-                  curVersion).apply();
-          //it was never stored, its our 1st presence, lets store it
-          if (lastVersion != -1) {
-            trackEvent(Constants.EVENT_UPDATE, null);
+
+    /**
+     * Set the Logging level for the SDK
+     *
+     * @param logLevel The {@link LOG_LEVEL} associated for logging
+     * @return the current instance of {@link Builder}
+     */
+    public Builder setLoggingLevel(LOG_LEVEL logLevel) {
+      loggingLevelSet = true;
+      PureMetrics.logLevel = logLevel;
+      return this;
+    }
+
+    /**
+     * Initializes the SDK
+     *
+     * @param context An instance of the application {@link Context}
+     * @return A populated instance of PureMetrics.
+     */
+    public PureMetrics init(Context context) {
+      //may be this was called because of config changes
+      if (null != _INSTANCE) {
+        _INSTANCE.registerLifeCycleHandler(context);
+        return _INSTANCE;
+      }
+      setLoggingLevel(context);
+      _INSTANCE = new PureMetrics(context, appId, appSecret);
+      if (context instanceof Activity) {
+        log(LOG_LEVEL.WARN, "You should be PureMetrics#init() code in your Application class");
+      }
+      return _INSTANCE;
+    }
+
+    /**
+     * Sets the logging level for the PureMetrics logging level
+     *
+     * @param context An instance of the application {@link Context}
+     */
+    private void setLoggingLevel(Context context) {
+      if (!loggingLevelSet) {
+        try {
+          if ((context.getPackageManager().getPackageInfo(
+                  context.getPackageName(), 0).applicationInfo.flags &
+                  ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
+            PureMetrics.logLevel = LOG_LEVEL.NONE;
           }
+        } catch (PackageManager.NameNotFoundException e) {
+          //intentionally suppressed
         }
-      } catch (PackageManager.NameNotFoundException e) {
-        //can never happen
       }
     }
   }
@@ -1257,7 +1200,7 @@ public final class PureMetrics {
        * @return {@link PureMetrics.Order.Builder}
        */
       public Builder setTransactionId(String transactionId) {
-        params.put(Constants.ATTR_TRANSACTION_ID, transactionId);
+        params.put(Constants.Events.Attributes.TRANSACTION_ID, transactionId);
         return this;
       }
 
@@ -1279,18 +1222,18 @@ public final class PureMetrics {
                          long unitPrice, long discountedPrice, int units, String currency) {
         try {
           JSONObject product = new JSONObject();
-          product.put(Constants.ATTR_PRODUCT_ID, productId);
+          product.put(Constants.Events.Attributes.PRODUCT_ID, productId);
           if (null != dimensions && dimensions.size() > 0) {
             try {
-              product.put(Constants.ATTR_META, new JSONObject(dimensions));
+              product.put(Constants.Events.Attributes.META, new JSONObject(dimensions));
             } catch (Throwable e) {
               log(LOG_LEVEL.ERROR, "addProduct", e);
             }
           }
-          product.put(Constants.ATTR_DISCOUNTED_PRICE, discountedPrice);
-          product.put(Constants.ATTR_UNIT_PRICE, unitPrice);
-          product.put(Constants.ATTR_UNIT_SOLD, units);
-          product.put(Constants.ATTR_CURRENCY, currency);
+          product.put(Constants.Events.Attributes.DISCOUNTED_PRICE, discountedPrice);
+          product.put(Constants.Events.Attributes.UNIT_PRICE, unitPrice);
+          product.put(Constants.Events.Attributes.UNIT_SOLD, units);
+          product.put(Constants.Events.Attributes.CURRENCY, currency);
           products.add(product);
         } catch (JSONException e) {
           log(LOG_LEVEL.ERROR, "PM: addProduct", e);
@@ -1324,10 +1267,10 @@ public final class PureMetrics {
       @NonNull
       Order build() {
         if (products.size() > 0) {
-          params.put(Constants.ATTR_PRODUCTS, products);
+          params.put(Constants.Events.Attributes.PRODUCTS, products);
         }
         if (null != meta) {
-          params.put(Constants.ATTR_META, meta);
+          params.put(Constants.Events.Attributes.META, meta);
         }
         return new Order(params);
       }
@@ -1376,7 +1319,7 @@ public final class PureMetrics {
       public
       @NonNull
       Builder setTransactionId(@NonNull String transactionId) {
-        params.put(Constants.ATTR_TRANSACTION_ID, transactionId);
+        params.put(Constants.Events.Attributes.TRANSACTION_ID, transactionId);
         return this;
       }
 
@@ -1391,7 +1334,7 @@ public final class PureMetrics {
       public
       @NonNull
       Builder setPaymentProviderTransactionId(String transactionId) {
-        params.put(Constants.ATTR_PG_TRANS_ID, transactionId);
+        params.put(Constants.Events.Attributes.PG_TRANS_ID, transactionId);
         return this;
       }
 
@@ -1406,7 +1349,7 @@ public final class PureMetrics {
       public
       @NonNull
       Builder setCurrency(@NonNull String currency) {
-        params.put(Constants.ATTR_CURRENCY, currency);
+        params.put(Constants.Events.Attributes.CURRENCY, currency);
         return this;
       }
 
@@ -1422,9 +1365,9 @@ public final class PureMetrics {
       @NonNull
       Builder setDiscount(String discountCode, long discountValue) {
         if (null != discountCode) {
-          params.put(Constants.ATTR_REVENUE_DISCOUNT_CODE, discountCode);
+          params.put(Constants.Events.Attributes.REVENUE_DISCOUNT_CODE, discountCode);
         }
-        params.put(Constants.ATTR_REVENUE_DISCOUNT_VALUE, discountValue);
+        params.put(Constants.Events.Attributes.REVENUE_DISCOUNT_VALUE, discountValue);
         return this;
       }
 
@@ -1459,9 +1402,9 @@ public final class PureMetrics {
       Builder addPayment(@NonNull String mode, long convertedAmount, long fees) {
         try {
           JSONObject payment = new JSONObject();
-          payment.put(Constants.ATTR_PAYMENT_MODE, mode);
-          payment.put(Constants.ATTR_AMOUNT, convertedAmount);
-          payment.put(Constants.ATTR_FEES, fees);
+          payment.put(Constants.Events.Attributes.PAYMENT_MODE, mode);
+          payment.put(Constants.Events.Attributes.AMOUNT, convertedAmount);
+          payment.put(Constants.Events.Attributes.FEES, fees);
           payments.add(payment);
         } catch (JSONException e) {
           log(LOG_LEVEL.ERROR, "PM: addPayment", e);
@@ -1478,10 +1421,10 @@ public final class PureMetrics {
       @NonNull
       Revenue build() {
         if (payments.size() > 0) {
-          params.put(Constants.ATTR_PAYMENTS, payments);
+          params.put(Constants.Events.Attributes.PAYMENTS, payments);
         }
         if (null != meta) {
-          params.put(Constants.ATTR_META, meta);
+          params.put(Constants.Events.Attributes.META, meta);
         }
         return new Revenue(params);
       }
@@ -1528,7 +1471,7 @@ public final class PureMetrics {
       public
       @NonNull
       Builder setTransactionId(@NonNull String transactionId) {
-        params.put(Constants.ATTR_TRANSACTION_ID, transactionId);
+        params.put(Constants.Events.Attributes.TRANSACTION_ID, transactionId);
         return this;
       }
 
@@ -1543,7 +1486,7 @@ public final class PureMetrics {
       public
       @NonNull
       Builder setPaymentProviderTransactionId(String transactionId) {
-        params.put(Constants.ATTR_PG_TRANS_ID, transactionId);
+        params.put(Constants.Events.Attributes.PG_TRANS_ID, transactionId);
         return this;
       }
 
@@ -1556,7 +1499,7 @@ public final class PureMetrics {
       public
       @NonNull
       Builder setCurrency(@NonNull String currency) {
-        params.put(Constants.ATTR_CURRENCY, currency);
+        params.put(Constants.Events.Attributes.CURRENCY, currency);
         return this;
       }
 
@@ -1569,7 +1512,7 @@ public final class PureMetrics {
       public
       @NonNull
       Builder setFailureReason(@NonNull String reason) {
-        params.put(Constants.ATTR_REASON, reason);
+        params.put(Constants.Events.Attributes.REASON, reason);
         return this;
       }
 
@@ -1582,7 +1525,7 @@ public final class PureMetrics {
       public
       @NonNull
       Builder setAmount(long amount) {
-        params.put(Constants.ATTR_AMOUNT, amount);
+        params.put(Constants.Events.Attributes.AMOUNT, amount);
         return this;
       }
 
@@ -1612,7 +1555,7 @@ public final class PureMetrics {
       @NonNull
       FailedTransaction build() {
         if (null != meta) {
-          params.put(Constants.ATTR_META, meta);
+          params.put(Constants.Events.Attributes.META, meta);
         }
         return new FailedTransaction(params);
       }

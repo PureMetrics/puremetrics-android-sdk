@@ -42,41 +42,25 @@ import org.json.JSONObject;
 class DBHelper extends SQLiteOpenHelper {
 
   private static final int DATABASE_VERSION = 1;
-
-  private final Object lock = new Object();
-
-  private final String[] EVENT_COLUMNS = {Constants.COLUMN_EVENTS_ID, Constants.COLUMN_EVENTS_SESSION, Constants.COLUMN_EVENTS_EV_JSON_STR};
-  private final String[] COLUMNS_ATTRIBUTES = {Constants.COLUMN_ATTRIBUTES_JSON_STR};
-
   private static final String CREATE_TABLE_EVENTS = "CREATE TABLE " + Constants.TABLE_NAME_EVENTS
           + "( " + Constants.COLUMN_EVENTS_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
           + Constants.COLUMN_EVENTS_SESSION + "  INTEGER, "
           + Constants.COLUMN_EVENTS_EV_JSON_STR + " TEXT );";
-
   private static final String CREATE_TABLE_PROPERTIES = "CREATE TABLE " + Constants.TABLE_NAME_PROPERTIES
           + "( " + Constants.COLUMN_EVENTS_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
           + Constants.COLUMN_ATTRIBUTE_TYPE + "  INTEGER, "
           + Constants.COLUMN_ATTRIBUTES_JSON_STR + " TEXT );";
-
-  public DBHelper(Context context) {
-    super(context, Constants.DATABASE_NAME, null, DATABASE_VERSION);
-  }
-
-  @Override
-  public void onCreate(SQLiteDatabase db) {
-    db.execSQL(CREATE_TABLE_EVENTS);
-    db.execSQL(CREATE_TABLE_PROPERTIES);
-  }
-
-  @Override
-  public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-    //not needed as of now
-  }
-
   /**
    * Internal static instance of DBHelper
    */
   private static DBHelper _INSTANCE = null;
+  private final Object lock = new Object();
+  private final String[] EVENT_COLUMNS = {Constants.COLUMN_EVENTS_ID, Constants.COLUMN_EVENTS_SESSION, Constants.COLUMN_EVENTS_EV_JSON_STR};
+  private final String[] COLUMNS_ATTRIBUTES = {Constants.COLUMN_ATTRIBUTES_JSON_STR};
+
+  public DBHelper(Context context) {
+    super(context, Constants.DATABASE_NAME, null, DATABASE_VERSION);
+  }
 
   /**
    * Get an instance of the {@link DBHelper}
@@ -88,6 +72,17 @@ class DBHelper extends SQLiteOpenHelper {
       _INSTANCE = new DBHelper(appContext);
     }
     return _INSTANCE;
+  }
+
+  @Override
+  public void onCreate(SQLiteDatabase db) {
+    db.execSQL(CREATE_TABLE_EVENTS);
+    db.execSQL(CREATE_TABLE_PROPERTIES);
+  }
+
+  @Override
+  public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+    //not needed as of now
   }
 
   /**
@@ -201,9 +196,9 @@ class DBHelper extends SQLiteOpenHelper {
                 sessionId = curSession;
               }
               if (curSession != sessionId) {
-                sessionObject.put(Constants.ATTR_EVENT, eventsArray);
-                sessionObject.put(Constants.ATTR_SESSION_START, sessionId);
-                sessionObject.put(Constants.ATTR_SESSION_ID, String.valueOf(sessionId));
+                sessionObject.put(Constants.RequestAttributes.EVENT, eventsArray);
+                sessionObject.put(Constants.RequestAttributes.SESSION_START_TIME, sessionId);
+                sessionObject.put(Constants.RequestAttributes.SESSION_ID, String.valueOf(sessionId));
                 sessionArray.put(sessionObject);
 
                 sessionObject = new JSONObject();
@@ -215,9 +210,9 @@ class DBHelper extends SQLiteOpenHelper {
               eventsArray.put(event);
               dataset.moveToNext();
             }
-            sessionObject.put(Constants.ATTR_SESSION_ID, String.valueOf(sessionId));
-            sessionObject.put(Constants.ATTR_SESSION_START, sessionId);
-            sessionObject.put(Constants.ATTR_EVENT, eventsArray);
+            sessionObject.put(Constants.RequestAttributes.SESSION_ID, String.valueOf(sessionId));
+            sessionObject.put(Constants.RequestAttributes.SESSION_START_TIME, sessionId);
+            sessionObject.put(Constants.RequestAttributes.EVENT, eventsArray);
             sessionArray.put(sessionObject);
           }
           if (sessionArray.length() > 0) {

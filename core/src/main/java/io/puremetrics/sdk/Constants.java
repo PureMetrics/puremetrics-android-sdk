@@ -29,10 +29,6 @@ package io.puremetrics.sdk;
 
 final class Constants {
 
-  private Constants() {
-    //constructor intentionally made private
-  }
-
   /**
    * SQLite Database name
    */
@@ -41,7 +37,6 @@ final class Constants {
    * Table name for Events
    */
   static final String TABLE_NAME_EVENTS = "events";
-
   static final String TABLE_NAME_PROPERTIES = "properties";
   /**
    * Column of {@link #TABLE_NAME_EVENTS} table a unique id for the event record
@@ -73,65 +68,9 @@ final class Constants {
    */
   static final String COLUMN_ATTRIBUTES_JSON_STR = "attr_value";
   /**
-   * SharedPreference key used to store and retrieve the last known device id
-   */
-  static final String PREF_KEY_DEVICE_ID = "key_di";
-  /**
-   * SharedPreference key used to store and retrieve the last known anonymous id
-   */
-  static final String PREF_KEY_ANONYMOUS_ID = "key_ai";
-  /**
-   * SharedPreference key used to store and retrieve the last known linking id
-   */
-  static final String PREF_KEY_LINKING_ID = "key_li";
-  /**
-   * SharedPreference key used to store and retrieve the last known session id
-   */
-  static final String PREF_KEY_LAST_SESSION_ID = "key_l_si";
-  /**
-   * SharedPreference key used to store and retrieve the last active time of the user
-   */
-  static final String PREF_KEY_LAST_ACTIVE_TIME = "key_l_ac";
-  /**
-   * SharedPreference key used to store and retrieve the last session start time
-   */
-  static final String PREF_KEY_NEW_USER = "key_new_user";
-  /**
-   * SharedPreference key used to store if the device information has already been collected
-   */
-  static final String PREF_KEY_DEVICEIFO_COLLECTED = "key_dcollected";
-  /**
-   * SharedPreference key used to store and retrieve the last known app version
-   */
-  static final String PREF_KEY_LAST_KNOWN_APP_VERSION = "key_lav";
-  /**
    * A constant value which denotes android on PureMetrics
    */
-  static final int PLATFORM_ANDROID = 2;
-  /**
-   * The device make/manufacturer
-   */
-  static final String DA_MAKE = "ma";
-  /**
-   * The device brand
-   */
-  static final String DA_BRAND = "br";
-  /**
-   * The device model
-   */
-  static final String DA_MODEL = "mo";
-  /**
-   * The Operating System version information
-   */
-  static final String DA_OS_VERSION = "osv";
-  /**
-   * The Google Advertisement identifier
-   */
-  static final String DA_GAID = "aid";
-  /**
-   * Google limited ad tracking enabled
-   */
-  static final String DA_LAT = "limited_ad_track";
+  static final int PLATFORM_VALUE = 2;
   /**
    * Attribute which denotes the app version name
    */
@@ -141,90 +80,6 @@ final class Constants {
    */
   static final String ATTR_APP_VERSION_CODE = "avc";
   /**
-   * User Id. Its the same as {@link #ATTR_LI}
-   */
-  static final String UA_USER_ID = "ui";
-  /**
-   * User first name
-   */
-  static final String UA_FNAME = "fname";
-  /**
-   * User last name
-   */
-  static final String UA_LNAME = "lname";
-  /**
-   * User age
-   */
-  static final String UA_AGE = "age";
-  /**
-   * User gender
-   */
-  static final String UA_GENDER = "gender";
-  /**
-   * Gender Male
-   */
-  static final String UA_GENDER_MALE = "m";
-  /**
-   * Gender Female
-   */
-  static final String UA_GENDER_FEMALE = "f";
-  /**
-   * Phone number of the user
-   */
-  static final String UA_PHONE = "phone";
-  /**
-   * Email ID of the user
-   */
-  static final String UA_EMAIL = "email";
-  /**
-   * [API Request] JSON Attribute : Device identifier.
-   */
-  static final String ATTR_DI = "di";
-  /**
-   * [API Request] JSON Attribute : The anonymous id associated with the user
-   */
-  static final String ATTR_AI = "ai";
-  /**
-   * [API Request] JSON Attribute : Linking ID or the ID using which a user can be identified on the client system.
-   */
-  static final String ATTR_LI = "li";
-  /**
-   * [API Request] JSON Attribute : The platform
-   */
-  static final String ATTR_PL = "pl";
-  /**
-   * [API Request] JSON Attribute : Timestamp, epoch time in milliseconds
-   */
-  static final String ATTR_TS = "ts";
-  /**
-   * [API Request] JSON Attribute : The timezone of the device
-   */
-  static final String ATTR_TZ = "tz";
-  /**
-   * [API Request] JSON Attribute : An array of session data
-   */
-  static final String ATTR_SESSION = "s";
-  /**
-   * [API Request] JSON Attribute : Session Id associated with the particular session
-   */
-  static final String ATTR_SESSION_ID = "id";
-  /**
-   * [API Request] JSON Attribute : Session start time for the specific session
-   */
-  static final String ATTR_SESSION_START = "ss";
-  /**
-   * [API Request] JSON Attribute : Denotes an array of events
-   */
-  static final String ATTR_EVENT = "e";
-  /**
-   * [API Request] JSON Attribute : Name of the event
-   */
-  static final String ATTR_EVENT_NAME = "ev";
-  /**
-   * [API Request] JSON Attribute : Event attributes associated with the event
-   */
-  static final String ATTR_EVENT_ATTR = "attr";
-  /**
    * The event referrer. This might be notification, re-targeting, email etc
    */
   static final String EVENT_REFRRER = "referrer";
@@ -233,53 +88,13 @@ final class Constants {
    */
   static final String EVENT_TYPE = "type";
   /**
-   * [API Request] JSON Attribute : Which denotes the fields for user attributes
-   */
-  static final String ATTR_UA = "ua";
-  /**
-   * [API Request] JSON Attribute : Which denotes the fields for device attributes
-   */
-  static final String ATTR_DA = "da";
-  /**
    * Default session duration is set to 30 Minutes
    */
   static final long DEFAULT_SESSION_DURATION = 1800000L;
   /**
-   * Event name for Session Start
-   */
-  static final String EVENT_NAME_SESSION_START = "ss";
-  /**
-   * Event name for acquisition
-   */
-  static final String EVENT_NAME_ACQUISITION = "acq";
-  /**
-   * Event name for an acquisition of an old user
-   */
-  static final String EVENT_NAME_EXISTING_USER_ACQ = "eacq";
-  /**
-   * PREFIX which denotes that the ID value is nothing but the IMEI number
-   */
-  static final String PREFIX_ID_IMEI = "I-";
-  /**
-   * PREFIX which denotes that the ID value is nothing but the MAC Address
-   */
-  static final String PREFIX_ID_MAC_ADDRESS = "M-";
-  /**
-   * PREFIX which denotes that the ID value is nothing but the Android ID
-   */
-  static final String PREFIX_ID_ANDROID_ID = "A-";
-  /**
-   * PREFIX which denotes that the ID value is nothing but a random generated ID
-   */
-  static final String PREFIX_ID_GENERATED = "R-";
-  /**
    * Preference file name for PureMetrics
    */
   static final String SHARED_PREF_NAME = "pm-pref";
-  /**
-   * Device Attribute Constant denoting device network carrier if it is a phone
-   */
-  static final String DA_CARRIER = "cn";
   /**
    * Device Attribute Constant denoting device network connectivity type
    */
@@ -288,104 +103,6 @@ final class Constants {
    * PureMetrics SDK version code
    */
   static final String ATTR_SDK_VERSION = "sdkv";
-  /**
-   * Device Attribute Constant denoting device screen density
-   */
-  static final String DA_DENSITY = "dis";
-  /**
-   * Device Attribute Constant denoting wdith x height
-   */
-  static final String DA_DISPLAY_DIMENSION = "sd";
-  /**
-   * Device Attribute Constant denoting minimum device screen dimension
-   */
-  static final String DA_DISPLAY_MINPX = "sw";
-  /**
-   * Device Attribute Constant denoting device year class information
-   */
-  static final String DA_YEAR = "yc";
-
-  static final String PREF_KEY_OLDUSER = "key_olduser";
-  /**
-   * Event Name for App Update
-   */
-  static final String EVENT_UPDATE = "upd";
-  /**
-   * Event name for Successful Transaction
-   */
-  static final String EVENT_TRANSACTION_SUCCESSFUL = "_trnss";
-  /**
-   * Event name for Transaction Started
-   */
-  static final String EVENT_TRANSACTION_STARTED = "_trnst";
-  /**
-   * Event name for Transaction failed
-   */
-  static final String EVENT_TRANSACTION_FAILED = "_trnf";
-  /**
-   * Revenue Event: value
-   */
-  static final String ATTR_AMOUNT = "amt";
-  /**
-   * Revenue Event: Product list
-   */
-  static final String ATTR_PRODUCTS = "prod";
-  /**
-   * Revenue Event: Product Id
-   */
-  static final String ATTR_PRODUCT_ID = "pid";
-  /**
-   * Revenue Event: Discounted price a product
-   */
-  static final String ATTR_DISCOUNTED_PRICE = "dp";
-  /**
-   * Revenue Event: Attribute for Unit price of a product
-   */
-  static final String ATTR_UNIT_PRICE = "up";
-  /**
-   * Revenue Event: Attribute for Units Sold
-   */
-  static final String ATTR_UNIT_SOLD = "ut";
-  /**
-   * Revenue Event: payment mode
-   */
-  static final String ATTR_PAYMENT_MODE = "md";
-  /**
-   * Revenue event attribute which has the payment mode information
-   */
-  static final String ATTR_PAYMENTS = "pay";
-  /**
-   * Fees charged by the payment gateway
-   */
-  static final String ATTR_FEES = "fees";
-  /**
-   * Revenue Event: discount code used
-   */
-  static final String ATTR_REVENUE_DISCOUNT_CODE = "disc";
-  /**
-   * Reveune Event: Discount Value
-   */
-  static final String ATTR_REVENUE_DISCOUNT_VALUE = "disv";
-  /**
-   * Additional meta data
-   */
-  static final String ATTR_META = "meta";
-  /**
-   * Revenue Event: Currency
-   */
-  static final String ATTR_CURRENCY = "cur";
-  /**
-   * Revenue Event: TransactionId
-   */
-  static final String ATTR_TRANSACTION_ID = "tid";
-  /**
-   * Revenue event: Payment provider transaction id
-   */
-  static final String ATTR_PG_TRANS_ID = "pgtid";
-  /**
-   * Revenue Event: Transaction Failed reason
-   */
-  static final String ATTR_REASON = "rsn";
   /**
    * Bundle extras which might have UTM tags
    */
@@ -410,17 +127,358 @@ final class Constants {
    * Deeplink for the campaign
    */
   static final String ATTR_DEEPLINK = "dl";
-
-  static final String HEADER_DEBUG = "debug";
-  static final String HEADER_DEBUG_VALUE = "true";
-  static final String HEADER_AUTHORIZATION = "Authorization";
-  static final String HEADER_CONTENTMD5 = "Content-MD5";
-  static final String HEADER_CONTENT_TYPE = "Content-Type";
-  static final String HEADER_CONTENT_TYPE_VALUE = "application/json;";
-  static final String HEADER_BASIC_AUTH_PREFIX = "basic ";
+  /**
+   * Http Method Post
+   */
   static final String REQUEST_METHOD_POST = "POST";
-  static final String HEADER_CONNECTION = "Connection";
-  static final String HEADER_CLOSE = "close";
-
   static final String REPLACEMENT_CHAR = "�";
+
+  private Constants() {
+    //constructor intentionally made private
+  }
+
+  /**
+   * SharedPreference keys for properties which need to be retained by the SDK
+   */
+  interface PREF_KEYS {
+    /**
+     * SharedPreference key used to store and retrieve the last known device id
+     */
+    String DEVICE_ID = "key_di";
+    /**
+     * SharedPreference key used to store and retrieve the last known anonymous id
+     */
+    String ANONYMOUS_ID = "key_ai";
+    /**
+     * SharedPreference key used to store and retrieve the last known linking id
+     */
+    String LINKING_ID = "key_li";
+    /**
+     * SharedPreference key used to store and retrieve the last known session id
+     */
+    String LAST_SESSION_ID = "key_l_si";
+    /**
+     * SharedPreference key used to store and retrieve the last active time of the user
+     */
+    String LAST_ACTIVE_TIME = "key_l_ac";
+    /**
+     * SharedPreference key used to store and retrieve the last session start time
+     */
+    String IS_NEW_USER = "key_new_user";
+    /**
+     * SharedPreference key used to store if the device information has already been collected
+     */
+    String DEVICEINFO_COLLECTED = "key_dcollected";
+    /**
+     * Shared Preference key used to store state if it is an existing user or new user
+     */
+    String OLDUSER = "olduser";
+  }
+
+  /**
+   * Device Attributes
+   */
+  interface DeviceAttributes {
+    /**
+     * The device make/manufacturer
+     */
+    String MAKE = "ma";
+    /**
+     * The device brand
+     */
+    String BRAND = "br";
+    /**
+     * The device model
+     */
+    String MODEL = "mo";
+    /**
+     * The Operating System version information
+     */
+    String OS_VERSION = "osv";
+    /**
+     * The Google Advertisement identifier
+     */
+    String GAID = "aid";
+    /**
+     * Google limited ad tracking enabled
+     */
+    String LAT = "limited_ad_track";
+    /**
+     * Network carrier if it is a phone
+     */
+    String CARRIER = "cn";
+    /**
+     * Device Attribute Constant denoting device screen density
+     */
+    String DENSITY = "dis";
+    /**
+     * Device Attribute Constant denoting wdith x height
+     */
+    String DISPLAY_DIMENSIONS = "sd";
+    /**
+     * Device Attribute Constant denoting minimum device screen dimension
+     */
+    String DISPLAY_MINPX = "sw";
+    /**
+     * Device Attribute Constant denoting device year class information
+     */
+    String YEAR_CLASS = "yc";
+  }
+
+  /**
+   * Known User Attributes which can be tracked for a specific user
+   */
+  interface UserAttributes {
+    /**
+     * User Id. Its the same as {@link RequestAttributes#LI}
+     */
+    String USER_ID = "ui";
+    /**
+     * User first name
+     */
+    String FIRST_NAME = "fname";
+    /**
+     * User last name
+     */
+    String LAST_NAME = "lname";
+    /**
+     * User Birthdate
+     */
+    String BIRTHDATE = "bday";
+    /**
+     * User gender
+     */
+    String GENDER = "gender";
+    /**
+     * Phone number of the user
+     */
+    String PHONE = "phone";
+    /**
+     * Email ID of the user
+     */
+    String EMAIL = "email";
+  }
+
+  interface PREFIX {
+    /**
+     * PREFIX which denotes that the ID value is nothing but the IMEI number
+     */
+    String ID_IMEI = "I-";
+    /**
+     * PREFIX which denotes that the ID value is nothing but the MAC Address
+     */
+    String ID_MAC = "M-";
+    /**
+     * PREFIX which denotes that the ID value is nothing but the Android ID
+     */
+    String ID_ANDROID = "A-";
+    /**
+     * PREFIX which denotes that the ID value is nothing but a random generated ID
+     */
+    String ID_RANDOM = "R-";
+  }
+
+  interface RequestAttributes {
+    /**
+     * [API Request] JSON Attribute : Device identifier.
+     */
+    String DI = "di";
+    /**
+     * [API Request] JSON Attribute : The anonymous id associated with the user
+     */
+    String AI = "ai";
+    /**
+     * [API Request] JSON Attribute : Linking ID or the ID using which a user can be identified on the client system.
+     */
+    String LI = "li";
+    /**
+     * [API Request] JSON Attribute : The platform
+     */
+    String PL = "pl";
+    /**
+     * [API Request] JSON Attribute : Timestamp, epoch time in milliseconds
+     */
+    String TS = "ts";
+    /**
+     * [API Request] JSON Attribute : The timezone of the device
+     */
+    String TZ = "tz";
+    /**
+     * [API Request] JSON Attribute : An array of session data
+     */
+    String SESSION = "s";
+    /**
+     * [API Request] JSON Attribute : Session Id associated with the particular session
+     */
+    String SESSION_ID = "id";
+    /**
+     * [API Request] JSON Attribute : Session start time for the specific session
+     */
+    String SESSION_START_TIME = "ss";
+    /**
+     * [API Request] JSON Attribute : Denotes an array of events
+     */
+    String EVENT = "e";
+    /**
+     * [API Request] JSON Attribute : Name of the event
+     */
+    String EVENT_NAME = "ev";
+    /**
+     * [API Request] JSON Attribute : Event attributes associated with the event
+     */
+    String EVENT_ATTRS = "attr";
+    /**
+     * [API Request] JSON Attribute : Which denotes the fields for user attributes
+     */
+    String UA = "ua";
+    /**
+     * [API Request] JSON Attribute : Which denotes the fields for device attributes
+     */
+    String DA = "da";
+
+  }
+
+  /**
+   * HTTP Headers
+   */
+  interface Headers {
+    /**
+     * DEBUG Header
+     */
+    String DEBUG = "debug";
+    /**
+     * Debug header value
+     */
+    String VALUE_DEBUG = "true";
+    /**
+     * Authorization header
+     */
+    String AUTHORIZATION = "Authorization";
+    /**
+     * Checksum Header
+     */
+    String CONTENTMD5 = "Content-MD5";
+    /**
+     * Content Type
+     */
+    String CONTENT_TYPE = "Content-Type";
+    /**
+     * Content type value application/json
+     */
+    String VALUE_APPLICATION_JSON = "application/json;";
+    /**
+     * Basic Authorization value prefix
+     */
+    String BASIC_AUTH_PREFIX = "basic ";
+    /**
+     * Connection header
+     */
+    String CONNECTION = "Connection";
+    /**
+     * Connection header value close
+     */
+    String CLOSE = "close";
+  }
+
+  static class Events {
+
+    /**
+     * Event name for Session Start
+     */
+    static final String SESSION_START = "ss";
+    /**
+     * Event name for acquisition
+     */
+    static final String ACQUISITION = "acq";
+    /**
+     * Event name for an acquisition of an old user
+     */
+    static final String EXISTING_USER_ACQ = "eacq";
+
+    private Events() {
+    }
+
+    interface Transaction {
+      /**
+       * Event name for Successful Transaction
+       */
+      String SUCCESSFUL = "_trnss";
+
+      /**
+       * Event name for Transaction Started
+       */
+      String STARTED = "_trnst";
+      /**
+       * Event name for Transaction failed
+       */
+      String FAILED = "_trnf";
+    }
+
+    interface Attributes {
+      /**
+       * Revenue Event: value
+       */
+      String AMOUNT = "amt";
+      /**
+       * Revenue Event: Product list
+       */
+      String PRODUCTS = "prod";
+      /**
+       * Revenue Event: Product Id
+       */
+      String PRODUCT_ID = "pid";
+      /**
+       * Revenue Event: Discounted price a product
+       */
+      String DISCOUNTED_PRICE = "dp";
+      /**
+       * Revenue Event: Attribute for Unit price of a product
+       */
+      String UNIT_PRICE = "up";
+      /**
+       * Revenue Event: Attribute for Units Sold
+       */
+      String UNIT_SOLD = "ut";
+      /**
+       * Revenue Event: payment mode
+       */
+      String PAYMENT_MODE = "md";
+      /**
+       * Revenue event attribute which has the payment mode information
+       */
+      String PAYMENTS = "pay";
+      /**
+       * Fees charged by the payment gateway
+       */
+      String FEES = "fees";
+      /**
+       * Revenue Event: discount code used
+       */
+      String REVENUE_DISCOUNT_CODE = "disc";
+      /**
+       * Reveune Event: Discount Value
+       */
+      String REVENUE_DISCOUNT_VALUE = "disv";
+      /**
+       * Additional meta data
+       */
+      String META = "meta";
+      /**
+       * Revenue Event: Currency
+       */
+      String CURRENCY = "cur";
+      /**
+       * Revenue Event: TransactionId
+       */
+      String TRANSACTION_ID = "tid";
+      /**
+       * Revenue event: Payment provider transaction id
+       */
+      String PG_TRANS_ID = "pgtid";
+      /**
+       * Revenue Event: Transaction Failed reason
+       */
+      String REASON = "rsn";
+    }
+  }
 }

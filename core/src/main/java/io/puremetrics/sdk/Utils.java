@@ -48,6 +48,7 @@ import java.net.URL;
 import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -98,7 +99,7 @@ final class Utils {
         TelephonyManager manager = (TelephonyManager) appContext.getSystemService(Context.TELEPHONY_SERVICE);
         String phoneId = manager.getDeviceId();
         if (phoneId != null && phoneId.length() > 0 && !INVALID_PHONE_IDS.contains(phoneId))
-          return Constants.PREFIX_ID_IMEI + phoneId;
+          return Constants.PREFIX.ID_IMEI + phoneId;
         return null;
       } catch (Throwable e) {
         //intentionally suppressed
@@ -119,7 +120,7 @@ final class Utils {
         if (SupportCompatV4.checkSelfPermission(appContext, Manifest.permission.ACCESS_WIFI_STATE)) {
           String macAddress = ((WifiManager) appContext.getSystemService(Context.WIFI_SERVICE)).getConnectionInfo().getMacAddress();
           if (null != macAddress && macAddress.length() > 0) {
-            return Constants.PREFIX_ID_MAC_ADDRESS + macAddress;
+            return Constants.PREFIX.ID_MAC + macAddress;
           }
         }
       }
@@ -134,7 +135,7 @@ final class Utils {
       final String androidId = Settings.Secure.getString(appContext.getContentResolver(), Settings.Secure.ANDROID_ID);
       // see http://code.google.com/p/android/issues/detail?id=10603 for info on this 'dup' id.
       if (null != androidId && androidId.length() > 0 && !androidId.equals("9774d56d682e549c")) {
-        return Constants.PREFIX_ID_ANDROID_ID + androidId;
+        return Constants.PREFIX.ID_ANDROID + androidId;
       }
     } catch (RuntimeException e) {
       //intentionally suppressed
@@ -143,7 +144,7 @@ final class Utils {
   }
 
   static String generateRandomId() {
-    return Constants.PREFIX_ID_GENERATED + UUID.randomUUID().toString() + "-" + System.currentTimeMillis();
+    return Constants.PREFIX.ID_RANDOM + UUID.randomUUID().toString() + "-" + System.currentTimeMillis();
   }
 
   static boolean uploadData(String authBytes, final String data, boolean isDebug) {
@@ -182,12 +183,12 @@ final class Utils {
     boolean result = false;
     URL url = new URL("https://api.puremetrics.io/v1/track");
     HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
-    urlConnection.setRequestProperty(Constants.HEADER_AUTHORIZATION, Constants.HEADER_BASIC_AUTH_PREFIX + authBytes);
-    urlConnection.setRequestProperty(Constants.HEADER_CONTENTMD5, checksumString);
-    urlConnection.setRequestProperty(Constants.HEADER_CONTENT_TYPE, Constants.HEADER_CONTENT_TYPE_VALUE);
-    urlConnection.setRequestProperty(Constants.HEADER_CONNECTION, Constants.HEADER_CLOSE);
+    urlConnection.setRequestProperty(Constants.Headers.AUTHORIZATION, Constants.Headers.BASIC_AUTH_PREFIX + authBytes);
+    urlConnection.setRequestProperty(Constants.Headers.CONTENTMD5, checksumString);
+    urlConnection.setRequestProperty(Constants.Headers.CONTENT_TYPE, Constants.Headers.VALUE_APPLICATION_JSON);
+    urlConnection.setRequestProperty(Constants.Headers.CONNECTION, Constants.Headers.CLOSE);
     if (isDebug) {
-      urlConnection.setRequestProperty(Constants.HEADER_DEBUG, Constants.HEADER_DEBUG_VALUE);
+      urlConnection.setRequestProperty(Constants.Headers.DEBUG, Constants.Headers.VALUE_DEBUG);
     }
     urlConnection.setRequestMethod(Constants.REQUEST_METHOD_POST);
 
@@ -225,12 +226,12 @@ final class Utils {
       Boolean limitAdTrackingEnabled = (Boolean) isLimitAdTrackingEnabled
               .invoke(advertisingInfo);
       if (limitAdTrackingEnabled != null && limitAdTrackingEnabled == Boolean.TRUE) {
-        PureMetrics.trackDeviceProperties(Constants.DA_LAT, true);
+        PureMetrics.trackDeviceProperties(Constants.DeviceAttributes.LAT, true);
       } else {
-        PureMetrics.trackDeviceProperties(Constants.DA_LAT, false);
+        PureMetrics.trackDeviceProperties(Constants.DeviceAttributes.LAT, false);
       }
       Method getId = advertisingInfo.getClass().getMethod("getId");
-      PureMetrics.trackDeviceProperties(Constants.DA_GAID, (String) getId.invoke(advertisingInfo));
+      PureMetrics.trackDeviceProperties(Constants.DeviceAttributes.GAID, (String) getId.invoke(advertisingInfo));
     } catch (ClassNotFoundException e) {
       PureMetrics.log(PureMetrics.LOG_LEVEL.WARN, "Google Play Services SDK not found!");
     } catch (InvocationTargetException e) {
@@ -246,7 +247,7 @@ final class Utils {
    * @param context Application {@link Context}
    * @return a string representing the network class
    */
-  public static String getNetworkClass(Context context) {
+  static String getNetworkClass(Context context) {
     try {
       ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
       NetworkInfo info = cm.getActiveNetworkInfo();
@@ -285,6 +286,14 @@ final class Utils {
     return "unknown";
   }
 
+  /**
+   * Get the device language
+   *
+   * @return The Default {@link Locale} language
+   */
+  static String getDeviceLanguage() {
+    return Locale.getDefault().getLanguage();
+  }
   /**
    * Enable the network change listener component.
    * This is required when some data is pending to be synced.

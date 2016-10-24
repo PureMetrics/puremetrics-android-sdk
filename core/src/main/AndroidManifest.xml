@@ -9,12 +9,6 @@
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
             </intent-filter>
         </receiver>
-        <receiver android:name=".AppUpdateReceiver">
-            <intent-filter>
-                <action android:name="android.intent.action.PACKAGE_REPLACED" />
-                <data android:scheme="package" android:path="${applicationId}" />
-            </intent-filter>
-        </receiver>
     </application>
 
 </manifest>

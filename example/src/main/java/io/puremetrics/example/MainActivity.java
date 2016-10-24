@@ -4,8 +4,10 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.UUID;
 
 import io.puremetrics.sdk.PureMetrics;
@@ -19,6 +21,14 @@ public class MainActivity extends AppCompatActivity {
     setContentView(R.layout.activity_main);
 
     /* In an ideal world your app code would not look like this.*/
+    TextView textView = (TextView) findViewById(R.id.textView);
+    String language = "Device Language: " + Locale.getDefault().getLanguage();
+    textView.setText(language);
+    HashMap<String, Object> extras = new HashMap<>();
+    extras.put("txt_length", 50);
+    extras.put("has_image", true);
+    extras.put("personalized", true);
+    PureMetrics.setAppOpenExtras("cmp", "notification", "mrkt", "456789ao", "app://link", extras);
 
     String transactionId = UUID.randomUUID().toString();
     HashMap<String, Object> meta = new HashMap<>();
