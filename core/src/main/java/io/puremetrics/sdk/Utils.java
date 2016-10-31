@@ -63,7 +63,7 @@ final class Utils {
 
   static String getCarrierName(Context appContext) {
     TelephonyManager manager = (TelephonyManager) appContext.getSystemService(Context.TELEPHONY_SERVICE);
-    String carrierName = manager.getNetworkOperatorName();
+    String carrierName = manager.getSimOperatorName();
     if (null != carrierName && carrierName.contains(Constants.REPLACEMENT_CHAR)) {
       carrierName = carrierName.replaceAll(Constants.REPLACEMENT_CHAR, "");
     }

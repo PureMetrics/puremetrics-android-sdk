@@ -29,7 +29,6 @@ package io.puremetrics.sdk;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -38,7 +37,6 @@ import android.content.res.Resources;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
-import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Base64;
@@ -57,7 +55,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.TimeZone;
 
 /**
@@ -86,6 +83,10 @@ public final class PureMetrics {
    * A boolean which denotes whether upload is in progress or not
    */
   private static boolean _UPLOAD_IN_PROGRESS = false;
+  /**
+   * Reset user information after upload. This is required when the user logs out
+   */
+  private static boolean _RESET_AFTER_UPLOAD = false;
   /**
    * An insternal instance of {@link Builder} but this is set to NULL later
    * on since it is not required always
@@ -124,10 +125,6 @@ public final class PureMetrics {
    * Authorization Bytes to be added for Http BASIC Auth
    */
   private String authBytes;
-  /**
-   * A {@link HashMap} which has the session start extras which were passed by the app
-   */
-  private HashMap<String, Object> sessionExtras = null;
   /**
    * The {@link SharedPreferences} which will be used
    */
@@ -171,17 +168,19 @@ public final class PureMetrics {
               "Please add PureMetrics.withBuilder().setAppConfiguration().init(context)");
       return;
     }
-    if (null != _INSTANCE.sessionExtras && _INSTANCE.sessionExtras.size() > 0) {
-      if (null == map) {
-        map = new HashMap<>();
+    if (AUTO_TRACKING_ENABLED || override) {
+      long curTime = System.currentTimeMillis();
+      long lastActiveTime = _INSTANCE.getLastActiveTime();
+      _INSTANCE.setLastActiveTime();//This is required SINCE CheckAndTrackSession is called more than once
+
+      if ((lastActiveTime + _SESSION_DURATION) < curTime) {
+        PureMetrics.log(LOG_LEVEL.DEBUG, "Last known session start: " + _INSTANCE.sessionId + " current time: " + curTime + " | _SESSION_DURATION: " + _SESSION_DURATION);
+        _INSTANCE.sessionId = curTime;
+        _INSTANCE.saveNewSessionId(curTime);
+        //if it a new session and auto tracking is enabled track a session start event
+        trackEvent(Constants.Events.SESSION_START, map);
       }
-      map.putAll(_INSTANCE.sessionExtras);
-      //No need to track the same values again
-      _INSTANCE.sessionExtras = null;
     }
-    long curTime = System.currentTimeMillis();
-    long lastActiveTime = _INSTANCE.getLastActiveTime();
-    _INSTANCE.setLastActiveTime();//This is required SINCE CheckAndTrackSession is called more than once
 
     if (_INSTANCE.isFirstTimeUser()) {
       trackAcquisition();
@@ -191,86 +190,24 @@ public final class PureMetrics {
       _INSTANCE.collectDeviceInfo();
     }
     Utils.enableNetworkListener(_INSTANCE.appContext);
-
-    if ((lastActiveTime + _SESSION_DURATION) < curTime) {
-      PureMetrics.log(LOG_LEVEL.DEBUG, "Last known session start: " + _INSTANCE.sessionId + " current time: " + curTime + " | _SESSION_DURATION: " + _SESSION_DURATION);
-      _INSTANCE.sessionId = curTime;
-      _INSTANCE.saveNewSessionId(curTime);
-      //if it a new session and auto tracking is enabled track a session start event
-      if (AUTO_TRACKING_ENABLED || override) {
-        trackEvent(Constants.Events.SESSION_START, map);
-      }
-    }
   }
 
   /**
-   * Add meta data to the session stating details of the app launch like,
-   * whether it was launched from a deep link present in a campaign, notification etc
-   *
+   * Track Deeplink attribution for app open or install
    * @param source   Source of any campaign if the app was opened from a campaign
    * @param medium   Medium of the campaign: email/notification/ads
-   * @param type     Type of session like if this is from the app or a floating bubble on screen
    * @param campaign Campaign name if any
    * @param deeplink Deeplink of the app launch if it was launched from a deeplink
    * @param extras   {@link HashMap} of meta data related to app start. These are custom extras
    */
-  public static void setAppOpenExtras(String source, String medium,
-                                      String type, String campaign,
-                                      String deeplink, HashMap<String, Object> extras) {
-    if (!initialized()) {
-      log(LOG_LEVEL.FATAL, "PureMetrics was not initialized. " +
-              "Please add PureMetrics.withBuilder().setAppConfiguration().init(context)");
-      return;
-    }
-    _INSTANCE.sessionExtras = new HashMap<>();
-    if (null != source) {
-      _INSTANCE.sessionExtras.put(Constants.ATTR_SOURCE, source);
-    }
-
-    if (null != medium) {
-      _INSTANCE.sessionExtras.put(Constants.ATTR_MEDIUM, medium);
-    }
-
-    if (null != type) {
-      _INSTANCE.sessionExtras.put(Constants.ATTR_TYPE, type);
-    }
-
-    if (null != campaign) {
-      _INSTANCE.sessionExtras.put(Constants.ATTR_CAMPAIGN, campaign);
-    }
-
-    if (null != deeplink) {
-      _INSTANCE.sessionExtras.put(Constants.ATTR_DEEPLINK, deeplink);
-    }
-
-    if (null != extras) {
-      _INSTANCE.sessionExtras.put(Constants.Events.Attributes.META, extras);
-    }
-  }
-
-  /**
-   * Check and see if its a new session or is an old session
-   */
-  static void checkAndTrackSession(Activity activity) {
-    HashMap<String, Object> map = null;
-    Intent intent = activity.getIntent();
-    if (null != intent) {
-      Bundle extras = intent.getExtras();
-      if (null != extras) {
-        Set<String> keySet = extras.keySet();
-        map = new HashMap<>();
-        for (String key : keySet) {
-          if (null == key) {
-            continue;
-          }
-          Object extraValue = extras.get(key);
-          if (null != extraValue && extraValue instanceof String && key.contains(Constants.UTM_EXTRAS)) {
-            map.put(key, extras.get(key));
-          }
-        }
-      }
-    }
-    checkAndTrackSession(map, false);
+  public static void trackDeeplinkAttribution(String source, String medium, String campaign, String deeplink, HashMap<String, Object> extras) {
+    HashMap<String, Object> attributes = new HashMap<>();
+    attributes.put(Constants.Events.Attributes.SOURCE, source);
+    attributes.put(Constants.Events.Attributes.MEDIUM, medium);
+    attributes.put(Constants.Events.Attributes.CAMPAIGN, campaign);
+    attributes.put(Constants.Events.Attributes.DEEPLINK, deeplink);
+    attributes.putAll(extras);
+    trackEvent(Constants.Events.ATTRIBUTION, attributes);
   }
 
   /**
@@ -369,17 +306,12 @@ public final class PureMetrics {
   }
 
   /**
-   * Track an event which was performed by the user
-   *
-   * @param eventName The name of the event
+   * To be called when a user signs out.
+   * This moves the user back to an anonymous state.
    */
-  static void trackEvent(String eventName) {
-    if (!initialized()) {
-      log(LOG_LEVEL.FATAL, "PureMetrics was not initialized. " +
-              "Please add PureMetrics.withBuilder().setAppConfiguration().init(context)");
-      return;
-    }
-    trackEvent(eventName, null);
+  public static void resetUserInfo() {
+    _RESET_AFTER_UPLOAD = true;
+    PureMetrics._INSTANCE.scheduleDataSync();
   }
 
   /**
@@ -420,10 +352,14 @@ public final class PureMetrics {
   /**
    * To be called from a Crash listener like the one in
    * CrashlyticsListener#crashlyticsDidDetectCrashDuringPreviousExecution
+   *
+   * @param meta any additional metadata that you would like to track.
    */
-  public static void trackCrash() {
-    trackEvent(Constants.Events.CRASH);
+  public static void trackCrash(HashMap<String, Object> meta) {
+    trackEvent(Constants.Events.CRASH, meta);
   }
+
+
   /**
    * Track a user property/trait. These are user level identifiers
    *
@@ -634,18 +570,10 @@ public final class PureMetrics {
   /**
    * Explicitly track Session start.
    * Call this only when you have set {@link Builder#disableAutoTracking(boolean)} as true
-   */
-  public static void trackSessionStart() {
-    trackSessionStart(null);
-  }
-
-  /**
-   * Explicitly track Session start.
-   * Call this only when you have set {@link Builder#disableAutoTracking(boolean)} as true
    *
    * @param extras An extras which need to be tracked which gives more insight regarding the source of launch
    */
-  public static void trackSessionStart(HashMap extras) {
+  public static void trackSessionStart(HashMap<String, Object> extras) {
     checkAndTrackSession(extras, true);
   }
 
@@ -653,13 +581,11 @@ public final class PureMetrics {
    * Explicitly track Session start.
    * Call this only when you have set {@link Builder#disableAutoTracking(boolean)} as true
    *
-   * @param referrer The referrer for the session. This can be a notification, launcher, default
    * @param type     The type of usage, like within app, external etc.
    */
-  public static void trackSessionStart(String referrer, String type) {
-    HashMap<String, String> extras = new HashMap<>();
-    extras.put(Constants.EVENT_REFRRER, referrer);
-    extras.put(Constants.EVENT_TYPE, type);
+  public static void trackSessionStart(String type) {
+    HashMap<String, Object> extras = new HashMap<>();
+    extras.put(Constants.Events.Attributes.TYPE, type);
     trackSessionStart(extras);
   }
 
@@ -988,6 +914,11 @@ public final class PureMetrics {
             if (result) {
               Utils.disableNetworkListener(appContext);
               databaseHelper.clearData();
+            } else if (_RESET_AFTER_UPLOAD) {
+              // this is where things go tricky,
+              // if upload is pending and user resets in that case
+              // we can simply reject the payload
+              databaseHelper.clearData();
             } else {
               Utils.enableNetworkListener(appContext);
             }
@@ -997,9 +928,26 @@ public final class PureMetrics {
           }
         } finally {
           _UPLOAD_IN_PROGRESS = false;
+          if (_RESET_AFTER_UPLOAD) {
+            resetUserInfoInternal();
+            _RESET_AFTER_UPLOAD = false;
+          }
         }
       }
     });
+  }
+
+  private void resetUserInfoInternal() {
+    synchronized (lock_sharedPref) {
+      SharedPreferences.Editor editor = preferences.edit();
+      editor.remove(Constants.PREF_KEYS.ANONYMOUS_ID);
+      editor.remove(Constants.PREF_KEYS.LINKING_ID);
+      editor.remove(Constants.PREF_KEYS.IS_NEW_USER);
+      editor.remove(Constants.PREF_KEYS.LAST_ACTIVE_TIME);
+      editor.remove(Constants.PREF_KEYS.LAST_SESSION_ID);
+      editor.apply();
+    }
+    checkAndTrackSession(null, false);
   }
 
   /**

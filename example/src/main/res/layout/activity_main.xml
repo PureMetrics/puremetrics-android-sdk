@@ -10,10 +10,10 @@
     tools:context="io.puremetrics.example.MainActivity">
 
     <TextView
+        android:id="@+id/textView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        android:id="@+id/textView"/>
+        android:text="Hello World!"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -23,31 +23,39 @@
 
 
         <Button
+            android:id="@+id/button1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Transaction Started"
-            android:id="@+id/button1"
 
 
             />
 
         <Button
+            android:id="@+id/button2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Transaction Failed"
-            android:id="@+id/button2"
 
 
             />
 
         <Button
+            android:id="@+id/button3"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Transaction Successful"
-            android:id="@+id/button3"
 
 
             />
+
+        <Button
+            android:id="@+id/button4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Logout User"
+            />
+
 
     </LinearLayout>
 </RelativeLayout>

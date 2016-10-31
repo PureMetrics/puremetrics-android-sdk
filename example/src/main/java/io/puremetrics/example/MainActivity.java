@@ -28,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
     extras.put("txt_length", 50);
     extras.put("has_image", true);
     extras.put("personalized", true);
-    PureMetrics.setAppOpenExtras("cmp", "notification", "mrkt", "456789ao", "app://link", extras);
+    PureMetrics.trackDeeplinkAttribution("facebook", "notification", "456789ao", "app://link", extras);
 
     String transactionId = UUID.randomUUID().toString();
     HashMap<String, Object> meta = new HashMap<>();
@@ -96,5 +96,13 @@ public class MainActivity extends AppCompatActivity {
         }
       });
     }
+
+    Button logout = (Button) findViewById(R.id.button4);
+    logout.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        PureMetrics.resetUserInfo();
+      }
+    });
   }
 }

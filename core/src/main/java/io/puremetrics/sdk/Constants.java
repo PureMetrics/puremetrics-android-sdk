@@ -104,30 +104,6 @@ final class Constants {
    */
   static final String ATTR_SDK_VERSION = "sdkv";
   /**
-   * Bundle extras which might have UTM tags
-   */
-  static final String UTM_EXTRAS = "utm";
-  /**
-   * App open type. Possible valus: App/Dialog/Widget
-   */
-  static final String ATTR_TYPE = "type";
-  /**
-   * Campaign which drove the app open
-   */
-  static final String ATTR_CAMPAIGN = "cmp";
-  /**
-   * Source of the campaign. Possible values: The push provider/Ad Network etc
-   */
-  static final String ATTR_SOURCE = "sr";
-  /**
-   * Campaign medium: Email/Notifications/Ads
-   */
-  static final String ATTR_MEDIUM = "md";
-  /**
-   * Deeplink for the campaign
-   */
-  static final String ATTR_DEEPLINK = "dl";
-  /**
    * Http Method Post
    */
   static final String REQUEST_METHOD_POST = "POST";
@@ -340,7 +316,6 @@ final class Constants {
      * [API Request] JSON Attribute : Which denotes the fields for device attributes
      */
     String DA = "da";
-
   }
 
   /**
@@ -429,6 +404,10 @@ final class Constants {
      * Denotes a crash event
      */
     static final String CRASH = "_crash";
+    /**
+     * Attribution or better know as the Interaction event
+     */
+    static final String ATTRIBUTION = "_tp";
 
     private Events() {
     }
@@ -514,6 +493,26 @@ final class Constants {
        * Revenue Event: Transaction Failed reason
        */
       String REASON = "rsn";
+      /**
+       * App open type. Possible valus: App/Dialog/Widget
+       */
+      String TYPE = "type";
+      /**
+       * Campaign which drove the app open
+       */
+      String CAMPAIGN = "cmp";
+      /**
+       * Source of the campaign. Possible values: The push provider/Ad Network etc
+       */
+      String SOURCE = "sr";
+      /**
+       * Campaign medium: Email/Notifications/Ads
+       */
+      String MEDIUM = "md";
+      /**
+       * Deeplink for the campaign
+       */
+      String DEEPLINK = "dl";
     }
   }
 }
