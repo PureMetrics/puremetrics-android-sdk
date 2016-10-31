@@ -321,7 +321,7 @@ public final class PureMetrics {
    * @param eventName  The name of the event
    * @param attributes A {@link HashMap} of the event attributes
    */
-  public static void trackEvent(String eventName, HashMap<String, Object> attributes) {
+  public static void trackEvent(String eventName, HashMap attributes) {
     if (!initialized()) {
       log(LOG_LEVEL.FATAL, "PureMetrics was not initialized. " +
               "Please add PureMetrics.withBuilder().setAppConfiguration().init(context)");
@@ -657,7 +657,7 @@ public final class PureMetrics {
    *
    * @return true if the user is an existing user, false otherwise
    */
-  static boolean isOldUser() {
+  private static boolean isOldUser() {
     if (!initialized()) {
       return false;
     }
@@ -671,7 +671,7 @@ public final class PureMetrics {
    *
    * @return true if it has been initialized else false
    */
-  static boolean initialized() {
+  private static boolean initialized() {
     return _INSTANCE != null;
   }
 
@@ -746,10 +746,6 @@ public final class PureMetrics {
       trackUserProperties(Constants.UserAttributes.PHONE, phoneNumber);
   }
 
-  static void setAcquisitionData() {
-    //TODO pass any acquisition information here like install referrer also make it public when done
-  }
-
   /**
    * Registers the {@link ActivityLifecycleListener} for the app
    *
@@ -765,7 +761,7 @@ public final class PureMetrics {
    *
    * @return the last known sessionId
    */
-  long getLastKnownSessionId() {
+  private long getLastKnownSessionId() {
     synchronized (lock_sharedPref) {
       return preferences.getLong(Constants.PREF_KEYS.LAST_SESSION_ID, 0);
     }
@@ -776,7 +772,7 @@ public final class PureMetrics {
    *
    * @param sessionId The session id which needs to be saved
    */
-  void saveNewSessionId(long sessionId) {
+  private void saveNewSessionId(long sessionId) {
     synchronized (lock_sharedPref) {
       preferences.edit().putLong(Constants.PREF_KEYS.LAST_SESSION_ID, sessionId).apply();
     }
@@ -787,7 +783,7 @@ public final class PureMetrics {
    *
    * @return The unqiue device identifier
    */
-  String getDeviceId() {
+  private String getDeviceId() {
     synchronized (lock_sharedPref) {
       String deviceId = preferences.getString(Constants.PREF_KEYS.DEVICE_ID, null);
       if (null == deviceId) {
@@ -803,7 +799,7 @@ public final class PureMetrics {
    *
    * @return The unique anonymous id
    */
-  String getAnonymousId() {
+  private String getAnonymousId() {
     synchronized (lock_sharedPref) {
       String id = preferences.getString(Constants.PREF_KEYS.ANONYMOUS_ID, null);
       if (null == id) {
@@ -819,7 +815,7 @@ public final class PureMetrics {
    *
    * @return true if it is a new user
    */
-  boolean isFirstTimeUser() {
+  private boolean isFirstTimeUser() {
     synchronized (lock_sharedPref) {
       boolean res = preferences.getBoolean(Constants.PREF_KEYS.IS_NEW_USER, true);
       preferences.edit().putBoolean(Constants.PREF_KEYS.IS_NEW_USER, false).apply();
@@ -827,7 +823,7 @@ public final class PureMetrics {
     }
   }
 
-  boolean isDeviceInfoCollected() {
+  private boolean isDeviceInfoCollected() {
     synchronized (lock_sharedPref) {
       boolean res = preferences.getBoolean(Constants.PREF_KEYS.DEVICEINFO_COLLECTED, false);
       preferences.edit().putBoolean(Constants.PREF_KEYS.DEVICEINFO_COLLECTED, true).apply();
@@ -840,7 +836,7 @@ public final class PureMetrics {
    *
    * @return get the string representation of the request
    */
-  String prepareRequest() {
+  private String prepareRequest() {
     try {
       JSONObject requestObject = new JSONObject();
       JSONArray e = PureMetrics._INSTANCE.databaseHelper.getEventsData();
@@ -953,7 +949,7 @@ public final class PureMetrics {
   /**
    * Collects the device information if it has not been tracked yet.
    */
-  void collectDeviceInfo() {
+  private void collectDeviceInfo() {
     TaskManager.getInstance().executeTask(new Runnable() {
       @Override
       public void run() {
@@ -982,7 +978,7 @@ public final class PureMetrics {
   /**
    * Set the last active time of the user as the current time
    */
-  void setLastActiveTime() {
+  private void setLastActiveTime() {
     synchronized (lock_sharedPref) {
       preferences.edit().putLong(Constants.PREF_KEYS.LAST_ACTIVE_TIME, System.currentTimeMillis()).apply();
     }
@@ -993,7 +989,7 @@ public final class PureMetrics {
    *
    * @return The last active time of the user
    */
-  long getLastActiveTime() {
+  private long getLastActiveTime() {
     synchronized (lock_sharedPref) {
       return preferences.getLong(Constants.PREF_KEYS.LAST_ACTIVE_TIME, 0);
     }

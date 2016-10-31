@@ -104,5 +104,15 @@ public class MainActivity extends AppCompatActivity {
         PureMetrics.resetUserInfo();
       }
     });
+
+    Button trackCustomEvent = (Button) findViewById(R.id.button5);
+    trackCustomEvent.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        HashMap<String, String> attrs = new HashMap<String, String>();
+        attrs.put("Meta", "Some Metadata");
+        PureMetrics.trackEvent("customEvent", attrs);
+      }
+    });
   }
 }
