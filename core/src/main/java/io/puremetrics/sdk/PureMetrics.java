@@ -38,6 +38,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.DisplayMetrics;
@@ -206,7 +207,9 @@ public final class PureMetrics {
     attributes.put(Constants.Events.Attributes.MEDIUM, medium);
     attributes.put(Constants.Events.Attributes.CAMPAIGN, campaign);
     attributes.put(Constants.Events.Attributes.DEEPLINK, deeplink);
-    attributes.putAll(extras);
+    if (null != extras) {
+      attributes.put(Constants.Events.Attributes.META, extras);
+    }
     trackEvent(Constants.Events.ATTRIBUTION, attributes);
   }
 
@@ -672,6 +675,33 @@ public final class PureMetrics {
     HashMap<String, String> attr = new HashMap<>();
     attr.put(Constants.Events.Attributes.VALUE, referrerCode);
     trackEvent(Constants.Events.REFERRER_CODE, attr);
+  }
+
+  /**
+   * Track an onboarding step. Also track SKIP as a step. This would help to measure if steps were skipped
+   *
+   * @param context       The onboarding context, as to with which onboarding is associated. Mandatory field
+   * @param versionNumber The onboarding set version number. Mandatory field
+   * @param sequence      The onboarding step sequence, a non zero number. Mandatory field
+   * @param stepName      The onboarding step name. Mandatory field
+   * @param variation     The onboarding step variation. Optional Field
+   * @param attributes    Additional Meta data. Optional Field
+   */
+  public static void trackOnboardingStep(@NonNull String context, int versionNumber, int sequence,
+                                         @NonNull String stepName, @Nullable String variation,
+                                         @Nullable HashMap attributes) {
+    HashMap<String, Object> meta = new HashMap<>();
+    meta.put(Constants.Events.Attributes.CONTEXT, context);
+    meta.put(Constants.Events.Attributes.VERSION_NUMBER, versionNumber);
+    meta.put(Constants.Events.Attributes.SEQUENCE, sequence);
+    meta.put(Constants.Events.Attributes.NAME, stepName);
+    if (null != variation) {
+      meta.put(Constants.Events.Attributes.VARIATION, variation);
+    }
+    if (null != attributes) {
+      meta.put(Constants.Events.Attributes.META, attributes);
+    }
+    trackEvent(Constants.Events.ONBOARDING, meta);
   }
 
   /**

@@ -506,25 +506,45 @@ final class Constants {
        */
       String TYPE = "type";
       /**
-       * Campaign which drove the app open
+       * <b>Attribution or Interaction Measurement: </b>Campaign which drove the app open
        */
       String CAMPAIGN = "cmp";
       /**
-       * Source of the campaign. Possible values: The push provider/Ad Network etc
+       * <b>Attribution or Interaction Measurement: </b>Source of the campaign. Possible values: The push provider/Ad Network etc
        */
       String SOURCE = "sr";
       /**
-       * Campaign medium: Email/Notifications/Ads
+       * <b>Attribution or Interaction Measurement: </b>Campaign medium: Email/Notifications/Ads
        */
       String MEDIUM = "md";
       /**
-       * Deeplink for the campaign
+       * <b>Attribution or Interaction Measurement: </b>Deeplink for the campaign
        */
       String DEEPLINK = "dl";
       /**
        * Any value specific to the event
        */
       String VALUE = "vl";
+      /**
+       * <b>Onboarding Measurement: </b> Onboarding set name or context
+       */
+      String CONTEXT = "ctxt";
+      /**
+       * <b>Onboarding Measurement: </b> Onboarding version Number
+       */
+      String VERSION_NUMBER = "vn";
+      /**
+       * <b>Onboarding Measurement: </b> Step sequence number
+       */
+      String SEQUENCE = "seq";
+      /**
+       * <b>Onboarding Measurement: </b> Step variation name
+       */
+      String VARIATION = "vr";
+      /**
+       * <b>Onboarding Measurement: </b> Name of the onboarding step
+       */
+      String NAME = "nm";
     }
   }
 }
