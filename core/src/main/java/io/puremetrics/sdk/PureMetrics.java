@@ -653,6 +653,28 @@ public final class PureMetrics {
   }
 
   /**
+   * Referral code of the current user which the user uses to refer.
+   *
+   * @param referralCode The referral code, i.e. the outgoing code
+   */
+  public static void setReferralCode(@NonNull String referralCode) {
+    HashMap<String, String> attr = new HashMap<>();
+    attr.put(Constants.Events.Attributes.VALUE, referralCode);
+    trackEvent(Constants.Events.REFERRAL_CODE, attr);
+  }
+
+  /**
+   * Referrer Code for the current user. This is the code which was used to refer this user
+   *
+   * @param referrerCode The referrer code, i.e. the incoming code
+   */
+  public static void setReferrer(@NonNull String referrerCode) {
+    HashMap<String, String> attr = new HashMap<>();
+    attr.put(Constants.Events.Attributes.VALUE, referrerCode);
+    trackEvent(Constants.Events.REFERRER_CODE, attr);
+  }
+
+  /**
    * Check to see if it is an existing user
    *
    * @return true if the user is an existing user, false otherwise

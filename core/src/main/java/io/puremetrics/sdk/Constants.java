@@ -80,10 +80,6 @@ final class Constants {
    */
   static final String ATTR_APP_VERSION_CODE = "avc";
   /**
-   * The event referrer. This might be notification, re-targeting, email etc
-   */
-  static final String EVENT_REFRRER = "referrer";
-  /**
    * The type of the event. Only if it is specified
    */
   static final String EVENT_TYPE = "type";
@@ -415,11 +411,11 @@ final class Constants {
     /**
      * Referral code of this user
      */
-    static final String REFERRAL_CODE = "_refr";
+    static final String REFERRAL_CODE = "_refl";
     /**
      * Referrer code of the user who referred this user
      */
-    static final String REFERRE_CODE = "_refe";
+    static final String REFERRER_CODE = "_refr";
 
     private Events() {
     }
@@ -525,6 +521,10 @@ final class Constants {
        * Deeplink for the campaign
        */
       String DEEPLINK = "dl";
+      /**
+       * Any value specific to the event
+       */
+      String VALUE = "vl";
     }
   }
 }
