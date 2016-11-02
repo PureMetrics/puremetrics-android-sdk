@@ -33,13 +33,14 @@ import java.util.concurrent.TimeUnit;
 
 final class TaskManager {
 
-  private ThreadPoolExecutor workerPool;
+  private static TaskManager _INSTANCE;
   // A queue of Runnables
   private final BlockingQueue<Runnable> workerQueue;
+  private ThreadPoolExecutor workerPool;
 
   private TaskManager() {
     // Instantiates the queue of Runnables as a LinkedBlockingQueue
-    workerQueue = new LinkedBlockingQueue<Runnable>();
+    workerQueue = new LinkedBlockingQueue<>();
     //Sets the amount of time an idle thread waits before terminating
     final int KEEP_ALIVE_TIME = 1;
     final int NUMBER_OF_CORES = Runtime.getRuntime().availableProcessors();
@@ -55,9 +56,7 @@ final class TaskManager {
     PureMetrics.log(PureMetrics.LOG_LEVEL.DEBUG, "Initialized workers: " + NUMBER_OF_CORES);
   }
 
-  private static TaskManager _INSTANCE;
-
-  public synchronized static TaskManager getInstance() {
+  synchronized static TaskManager getInstance() {
     if (null == _INSTANCE) {
       _INSTANCE = new TaskManager();
     }
@@ -68,7 +67,7 @@ final class TaskManager {
    * Executes a task on the internal {@link ThreadPoolExecutor}
    * @param task An instance of {@link Runnable} which represents the task
    */
-  public void executeTask(Runnable task) {
+  void executeTask(Runnable task) {
     try {
       workerPool.submit(task);
     } catch (Throwable e) {
@@ -89,7 +88,7 @@ final class TaskManager {
   /**
    * Prints the Status of the TaskManager
    */
-  void printManagerStatus() {
+  private void printManagerStatus() {
     PureMetrics.log(PureMetrics.LOG_LEVEL.DEBUG, "Tasks in queue: " + workerQueue.size()
             + " Active Threads: " + workerPool.getActiveCount());
   }

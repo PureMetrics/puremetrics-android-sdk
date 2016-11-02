@@ -78,7 +78,7 @@ import java.security.MessageDigest;
  * for RFC 1321", 2002-06-14, 2001-01-19, 2000-04-12.</li>
  * </ol>
  */
-public final class MD5 extends MessageDigest implements Cloneable {
+final class MD5 extends MessageDigest implements Cloneable {
   /**
    * Private contextual byte count, stored at end of the last block,
    * after the ending padded block.
@@ -102,7 +102,7 @@ public final class MD5 extends MessageDigest implements Cloneable {
   /**
    * Creates a MD5 object with default initial state.
    */
-  public MD5() {
+  MD5() {
     super("MD5");
     pad = new byte[64];
     init();
@@ -113,7 +113,7 @@ public final class MD5 extends MessageDigest implements Cloneable {
    */
   public Object clone() throws CloneNotSupportedException {
     final MD5 that = (MD5) super.clone();
-    that.pad = (byte[]) this.pad.clone();
+    that.pad = this.pad.clone();
     return that;
   }
 
@@ -147,7 +147,7 @@ public final class MD5 extends MessageDigest implements Cloneable {
    * Initialize the digest context.
    *
    */
-  protected void init() {
+  private void init() {
         /* Set to MD5/RIPEMD128 magic values. */
     hA = 0x67452301;
     hB = 0xefcdab89;
@@ -430,7 +430,7 @@ public final class MD5 extends MessageDigest implements Cloneable {
    * @param offset the offset to start from in the array of bytes.
    * 
    */
-  private final void engineUpdate(final byte[] input, int offset) {
+  private void engineUpdate(final byte[] input, int offset) {
         /* Intermediate sub-digest values. */
     int a, b, c, d;
         /* Store the input block into the local working set of 32-bit values,

@@ -94,7 +94,7 @@ final class Utils {
     return deviceId;
   }
 
-  static String getIMEI(Context appContext) {
+  private static String getIMEI(Context appContext) {
     if (SupportCompatV4.checkSelfPermission(appContext, Manifest.permission.READ_PHONE_STATE)) {
       try {
         TelephonyManager manager = (TelephonyManager) appContext.getSystemService(Context.TELEPHONY_SERVICE);
@@ -109,13 +109,13 @@ final class Utils {
     return null;
   }
 
-  static boolean hasTelephoneFeature(Context appContext) {
+  private static boolean hasTelephoneFeature(Context appContext) {
     PackageManager packageManager = appContext.getPackageManager();
     return packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY);
   }
 
   @SuppressWarnings({"MissingPermission"})
-  static String getWifiMac(Context appContext) {
+  private static String getWifiMac(Context appContext) {
     try {
       if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
         if (SupportCompatV4.checkSelfPermission(appContext, Manifest.permission.ACCESS_WIFI_STATE)) {
@@ -131,7 +131,7 @@ final class Utils {
     return null;
   }
 
-  static String getAndroidId(Context appContext) {
+  private static String getAndroidId(Context appContext) {
     try {
       final String androidId = Settings.Secure.getString(appContext.getContentResolver(), Settings.Secure.ANDROID_ID);
       // see http://code.google.com/p/android/issues/detail?id=10603 for info on this 'dup' id.
@@ -180,7 +180,7 @@ final class Utils {
     return false;
   }
 
-  static boolean uploadDataInternal(String authBytes, String checksumString, byte[] data, int retryCount, boolean isDebug) throws IOException {
+  private static boolean uploadDataInternal(String authBytes, String checksumString, byte[] data, int retryCount, boolean isDebug) throws IOException {
     boolean result = false;
     URL url = new URL("https://api.puremetrics.io/v1/track");
     HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();

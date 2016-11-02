@@ -408,6 +408,18 @@ final class Constants {
      * Attribution or better know as the Interaction event
      */
     static final String ATTRIBUTION = "_tp";
+    /**
+     * Event name for onboarding events
+     */
+    static final String ONBOARDING = "_onb";
+    /**
+     * Referral code of this user
+     */
+    static final String REFERRAL_CODE = "_refr";
+    /**
+     * Referrer code of the user who referred this user
+     */
+    static final String REFERRE_CODE = "_refe";
 
     private Events() {
     }

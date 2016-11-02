@@ -58,7 +58,7 @@ class DBHelper extends SQLiteOpenHelper {
   private final String[] EVENT_COLUMNS = {Constants.COLUMN_EVENTS_ID, Constants.COLUMN_EVENTS_SESSION, Constants.COLUMN_EVENTS_EV_JSON_STR};
   private final String[] COLUMNS_ATTRIBUTES = {Constants.COLUMN_ATTRIBUTES_JSON_STR};
 
-  public DBHelper(Context context) {
+  private DBHelper(Context context) {
     super(context, Constants.DATABASE_NAME, null, DATABASE_VERSION);
   }
 
@@ -67,7 +67,7 @@ class DBHelper extends SQLiteOpenHelper {
    * @param appContext An instance of the application {@link Context}
    * @return an instance of {@link DBHelper}
    */
-  public static synchronized DBHelper getInstance(Context appContext) {
+  static synchronized DBHelper getInstance(Context appContext) {
     if (null == _INSTANCE) {
       _INSTANCE = new DBHelper(appContext);
     }
@@ -89,7 +89,7 @@ class DBHelper extends SQLiteOpenHelper {
    * Stores event data
    * @param event_data Event information which needs to be stored
    */
-  public void storeEvents(String event_data) {
+  void storeEvents(String event_data) {
     synchronized (lock) {
       long result = -1;
       try {
@@ -155,7 +155,7 @@ class DBHelper extends SQLiteOpenHelper {
    * Store user attributes
    * @param data The user attribute data to be stored
    */
-  public void storeUserAttributes(String data) {
+  void storeUserAttributes(String data) {
     storeAttributes(data, Constants.ATTRIBUTE_TYPE_USER);
   }
 
@@ -163,7 +163,7 @@ class DBHelper extends SQLiteOpenHelper {
    * Store device attribute
    * @param data The device attribute data to be stored
    */
-  public void storeDeviceAttributes(String data) {
+  void storeDeviceAttributes(String data) {
     storeAttributes(data, Constants.ATTRIBUTE_TYPE_DEVICE);
   }
 
@@ -171,7 +171,7 @@ class DBHelper extends SQLiteOpenHelper {
    * Get Event Data
    * @return returns a {@link JSONArray} representing the events data
    */
-  public JSONArray getEventsData() {
+  JSONArray getEventsData() {
     synchronized (lock) {
       Cursor dataset = null;
       try {
@@ -238,7 +238,7 @@ class DBHelper extends SQLiteOpenHelper {
    * Get the User attributes to send
    * @return a populated {@link JSONObject} or null
    */
-  public JSONObject getUserAttributesIfAny() {
+  JSONObject getUserAttributesIfAny() {
     synchronized (lock) {
       Cursor dataset = null;
       try {
@@ -279,7 +279,7 @@ class DBHelper extends SQLiteOpenHelper {
    * Get the Device attributes to send
    * @return a populated {@link JSONObject} or null
    */
-  public JSONObject getDeviceAttributesIfAny() {
+  JSONObject getDeviceAttributesIfAny() {
     synchronized (lock) {
       Cursor dataset = null;
       try {
