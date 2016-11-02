@@ -472,7 +472,7 @@ public final class PureMetrics {
    * @param deviceProperty Name of the device property
    * @param propertyValue  String Value associated with the user property
    */
-  public static void trackDeviceProperties(final String deviceProperty, final String propertyValue) {
+  static void trackDeviceProperties(final String deviceProperty, final String propertyValue) {
     if (!initialized()) {
       log(LOG_LEVEL.FATAL, "PureMetrics was not initialized. " +
               "Please add PureMetrics.withBuilder().setAppConfiguration().init(context)");
@@ -499,7 +499,7 @@ public final class PureMetrics {
    * @param deviceProperty Name of the device property
    * @param propertyValue  Integer Value associated with the user property
    */
-  public static void trackDeviceProperties(final String deviceProperty, final int propertyValue) {
+  private static void trackDeviceProperties(final String deviceProperty, final int propertyValue) {
     if (!initialized()) {
       log(LOG_LEVEL.FATAL, "PureMetrics was not initialized. " +
               "Please add PureMetrics.withBuilder().setAppConfiguration().init(context)");
@@ -518,39 +518,13 @@ public final class PureMetrics {
       }
     });
   }
-
-  /**
-   * Track a device property/trait. These are user level identifiers
-   *
-   * @param deviceProperty Name of the device property
-   * @param propertyValue  Double Value associated with the user property
-   */
-  public static void trackDeviceProperties(final String deviceProperty, final double propertyValue) {
-    if (!initialized()) {
-      log(LOG_LEVEL.FATAL, "PureMetrics was not initialized. " +
-              "Please add PureMetrics.withBuilder().setAppConfiguration().init(context)");
-      return;
-    }
-    TaskManager.getInstance().executeTask(new Runnable() {
-      @Override
-      public void run() {
-        _INSTANCE.databaseHelper.storeDeviceAttributes(new StringBuilder().append("\"")
-                .append(deviceProperty)
-                .append("\"")
-                .append(":")
-                .append(propertyValue)
-                .toString());
-      }
-    });
-  }
-
   /**
    * Track a device  property/trait. These are user level identifiers
    *
    * @param deviceProperty Name of the device property
    * @param propertyValue  Boolean Value associated with the user property
    */
-  public static void trackDeviceProperties(final String deviceProperty, final boolean propertyValue) {
+  static void trackDeviceProperties(final String deviceProperty, final boolean propertyValue) {
     if (!initialized()) {
       log(LOG_LEVEL.FATAL, "PureMetrics was not initialized. " +
               "Please add PureMetrics.withBuilder().setAppConfiguration().init(context)");
