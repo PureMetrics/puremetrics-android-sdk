@@ -201,7 +201,8 @@ public final class PureMetrics {
    * @param deeplink Deeplink of the app launch if it was launched from a deeplink
    * @param extras   {@link HashMap} of meta data related to app start. These are custom extras
    */
-  public static void trackDeeplinkAttribution(String source, String medium, String campaign, String deeplink, HashMap<String, Object> extras) {
+  public static void trackDeeplinkAttribution(String source, String medium, String campaign,
+                                              String deeplink, HashMap<String, Object> extras) {
     HashMap<String, Object> attributes = new HashMap<>();
     attributes.put(Constants.Events.Attributes.SOURCE, source);
     attributes.put(Constants.Events.Attributes.MEDIUM, medium);
@@ -548,22 +549,20 @@ public final class PureMetrics {
    * Explicitly track Session start.
    * Call this only when you have set {@link Builder#disableAutoTracking(boolean)} as true
    *
-   * @param extras An extras which need to be tracked which gives more insight regarding the source of launch
-   */
-  public static void trackSessionStart(HashMap<String, Object> extras) {
-    checkAndTrackSession(extras, true);
-  }
-
-  /**
-   * Explicitly track Session start.
-   * Call this only when you have set {@link Builder#disableAutoTracking(boolean)} as true
-   *
    * @param type     The type of usage, like within app, external etc.
    */
-  public static void trackSessionStart(String type) {
-    HashMap<String, Object> extras = new HashMap<>();
-    extras.put(Constants.Events.Attributes.TYPE, type);
-    trackSessionStart(extras);
+  public static void trackSessionStart(String type, HashMap<String, Object> extras) {
+    HashMap<String, Object> meta = null;
+    if (null != extras || null != type) {
+      meta = new HashMap<>();
+    }
+    if (null != extras) {
+      meta.put(Constants.Events.Attributes.META, extras);
+    }
+    if (null != type) {
+      meta.put(Constants.Events.Attributes.TYPE, type);
+    }
+    checkAndTrackSession(meta, true);
   }
 
   /**
