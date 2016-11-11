@@ -131,6 +131,11 @@ public final class PureMetrics {
    */
   private SharedPreferences preferences;
   /**
+   * A failsafe when developer tracks transaction start and
+   * provides an id and then fails to set the same in succes or failure
+   */
+  private String lastTransactionId;
+  /**
    * Constructor
    *
    * @param context   An instance of the application context
@@ -178,6 +183,8 @@ public final class PureMetrics {
         PureMetrics.log(LOG_LEVEL.DEBUG, "Last known session start: " + _INSTANCE.sessionId + " current time: " + curTime + " | _SESSION_DURATION: " + _SESSION_DURATION);
         _INSTANCE.sessionId = curTime;
         _INSTANCE.saveNewSessionId(curTime);
+        //add connection type in session start this supersedes send connection
+        map.put(Constants.RequestAttributes.CONNECTION_TYPE, Utils.getNetworkClass(_INSTANCE.appContext));
         //if it a new session and auto tracking is enabled track a session start event
         trackEvent(Constants.Events.SESSION_START, map);
       }
@@ -552,10 +559,7 @@ public final class PureMetrics {
    * @param type     The type of usage, like within app, external etc.
    */
   public static void trackSessionStart(String type, HashMap<String, Object> extras) {
-    HashMap<String, Object> meta = null;
-    if (null != extras || null != type) {
-      meta = new HashMap<>();
-    }
+    HashMap<String, Object> meta = meta = new HashMap<>();
     if (null != extras) {
       meta.put(Constants.Events.Attributes.META, extras);
     }
@@ -588,6 +592,30 @@ public final class PureMetrics {
       return;
     }
     trackEvent(Constants.Events.Transaction.SUCCESSFUL, revenue.eventAttrs);
+  }
+
+  /**
+   * Track when an order is cancelled from the app.
+   * This applies to only orders which were made successful and then later cancelled.
+   *
+   * @param transactionId The transaction id of the order which is being cancelled
+   * @param fees          Any fees associated with the order
+   * @param currency      Currency of the fees charged
+   * @param attributes    Any additional metadata associated with cancellation
+   */
+  public static void trackOrderCancellation(@NonNull String transactionId,
+                                            @Nullable long fees, @Nullable String currency,
+                                            @Nullable HashMap<String, Object> attributes) {
+    HashMap<String, Object> meta = new HashMap<>();
+    meta.put(Constants.Events.Attributes.TRANSACTION_ID, transactionId);
+    if (null != currency) {
+      meta.put(Constants.Events.Attributes.CURRENCY, currency);
+      meta.put(Constants.Events.Attributes.FEES, fees);
+    }
+    if (null != attributes) {
+      meta.put(Constants.Events.Attributes.META, attributes);
+    }
+    trackEvent(Constants.Events.Transaction.CANCELLED, meta);
   }
 
   /**
@@ -632,22 +660,30 @@ public final class PureMetrics {
    * Referral code of the current user which the user uses to refer.
    *
    * @param referralCode The referral code, i.e. the outgoing code
+   * @param attributes    Additional Meta data. Optional Field
    */
-  public static void setReferralCode(@NonNull String referralCode) {
-    HashMap<String, String> attr = new HashMap<>();
-    attr.put(Constants.Events.Attributes.VALUE, referralCode);
-    trackEvent(Constants.Events.REFERRAL_CODE, attr);
+  public static void setReferralCode(@NonNull String referralCode, HashMap<String, Object> attributes) {
+    HashMap<String, Object> attr = new HashMap<>();
+    attr.put(Constants.Events.Attributes.REFERRAL_CODE, referralCode);
+    if (null != attributes && attributes.size() > 0) {
+      attr.put(Constants.Events.Attributes.META, attributes);
+    }
+    trackEvent(Constants.Events.REFERRAL_DETAILS, attr);
   }
 
   /**
    * Referrer Code for the current user. This is the code which was used to refer this user
    *
    * @param referrerCode The referrer code, i.e. the incoming code
+   * @param attributes    Additional Meta data. Optional Field
    */
-  public static void setReferrer(@NonNull String referrerCode) {
-    HashMap<String, String> attr = new HashMap<>();
-    attr.put(Constants.Events.Attributes.VALUE, referrerCode);
-    trackEvent(Constants.Events.REFERRER_CODE, attr);
+  public static void setReferrerCode(@NonNull String referrerCode, HashMap<String, Object> attributes) {
+    HashMap<String, Object> attr = new HashMap<>();
+    attr.put(Constants.Events.Attributes.REFERRER_CODE, referrerCode);
+    if (null != attributes) {
+      attr.put(Constants.Events.Attributes.META, attributes);
+    }
+    trackEvent(Constants.Events.REFERRAL_DETAILS, attr);
   }
 
   /**
@@ -742,7 +778,6 @@ public final class PureMetrics {
    * @param userId The user id of the user
    */
   public static void setUserId(final String userId) {
-    //TODO if unique id changes, we might have to change anonymous id
     if (initialized()) {
       synchronized (_INSTANCE.lock_sharedPref) {
         _INSTANCE.preferences.edit().putString(Constants.PREF_KEYS.LINKING_ID, userId).apply();
@@ -891,10 +926,11 @@ public final class PureMetrics {
       requestObject.put(Constants.RequestAttributes.TS, System.currentTimeMillis());
       requestObject.put(Constants.RequestAttributes.TZ, TimeZone.getDefault().getID());
       requestObject.put(Constants.RequestAttributes.PL, Constants.PLATFORM_VALUE);
-      requestObject.put(Constants.ATTR_APP_VERSION_CODE, versionCode);
-      requestObject.put(Constants.ATTR_APP_VERSION_NAME, versionName);
-      requestObject.put(Constants.ATTR_CONNECTION_TYPE, Utils.getNetworkClass(appContext));
-      requestObject.put(Constants.ATTR_SDK_VERSION, BuildConfig.VERSION_CODE);
+      requestObject.put(Constants.RequestAttributes.APP_VERSION_CODE, versionCode);
+      requestObject.put(Constants.RequestAttributes.APP_VERSION_NAME, versionName);
+      requestObject.put(Constants.RequestAttributes.CONNECTION_TYPE, Utils.getNetworkClass(appContext));
+      requestObject.put(Constants.RequestAttributes.LANGUAGE, Utils.getDeviceLanguage());
+      requestObject.put(Constants.RequestAttributes.SDK_VERSION, BuildConfig.VERSION_CODE);
       String li = preferences.getString(Constants.PREF_KEYS.LINKING_ID, null);
       if (!TextUtils.isEmpty(li)) {
         requestObject.put(Constants.RequestAttributes.LI, li);
@@ -968,7 +1004,7 @@ public final class PureMetrics {
       editor.remove(Constants.PREF_KEYS.LAST_SESSION_ID);
       editor.apply();
     }
-    checkAndTrackSession(null, false);
+    checkAndTrackSession(new HashMap<String, Object>(), false);
   }
 
   /**
@@ -994,7 +1030,6 @@ public final class PureMetrics {
         trackDeviceProperties(Constants.DeviceAttributes.DISPLAY_DIMENSIONS, dm.widthPixels + "x" + dm.heightPixels);
         int year = YearClass.get(appContext);
         trackDeviceProperties(Constants.DeviceAttributes.YEAR_CLASS, year);
-        trackDeviceProperties(Constants.DeviceAttributes.LANGUAGE, Utils.getDeviceLanguage());
         trackDeviceProperties(Constants.DeviceAttributes.INSTALLER, Utils.getInstallSource(appContext));
       }
     });
@@ -1174,6 +1209,7 @@ public final class PureMetrics {
        * @return {@link PureMetrics.Order.Builder}
        */
       public Builder setTransactionId(String transactionId) {
+        _INSTANCE.lastTransactionId = transactionId;
         params.put(Constants.Events.Attributes.TRANSACTION_ID, transactionId);
         return this;
       }
@@ -1394,6 +1430,11 @@ public final class PureMetrics {
       public
       @NonNull
       Revenue build() {
+        if (params.get(Constants.Events.Attributes.TRANSACTION_ID) == null
+                && null != _INSTANCE.lastTransactionId) {
+          params.put(Constants.Events.Attributes.TRANSACTION_ID, _INSTANCE.lastTransactionId);
+          _INSTANCE.lastTransactionId = null;
+        }
         if (payments.size() > 0) {
           params.put(Constants.Events.Attributes.PAYMENTS, payments);
         }
@@ -1528,6 +1569,11 @@ public final class PureMetrics {
       public
       @NonNull
       FailedTransaction build() {
+        if (params.get(Constants.Events.Attributes.TRANSACTION_ID) == null
+                && null != _INSTANCE.lastTransactionId) {
+          params.put(Constants.Events.Attributes.TRANSACTION_ID, _INSTANCE.lastTransactionId);
+          _INSTANCE.lastTransactionId = null;
+        }
         if (null != meta) {
           params.put(Constants.Events.Attributes.META, meta);
         }

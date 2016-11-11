@@ -72,14 +72,6 @@ final class Constants {
    */
   static final int PLATFORM_VALUE = 2;
   /**
-   * Attribute which denotes the app version name
-   */
-  static final String ATTR_APP_VERSION_NAME = "avn";
-  /**
-   * Attribute which denotes the app version code
-   */
-  static final String ATTR_APP_VERSION_CODE = "avc";
-  /**
    * The type of the event. Only if it is specified
    */
   static final String EVENT_TYPE = "type";
@@ -91,14 +83,6 @@ final class Constants {
    * Preference file name for PureMetrics
    */
   static final String SHARED_PREF_NAME = "pm-pref";
-  /**
-   * Device Attribute Constant denoting device network connectivity type
-   */
-  static final String ATTR_CONNECTION_TYPE = "conn";
-  /**
-   * PureMetrics SDK version code
-   */
-  static final String ATTR_SDK_VERSION = "sdkv";
   /**
    * Http Method Post
    */
@@ -192,10 +176,6 @@ final class Constants {
      * Device Attribute Constant denoting device year class information
      */
     String YEAR_CLASS = "yc";
-    /**
-     * Device Language
-     */
-    String LANGUAGE = "lang";
     /**
      * App installer package name/id
      */
@@ -312,6 +292,26 @@ final class Constants {
      * [API Request] JSON Attribute : Which denotes the fields for device attributes
      */
     String DA = "da";
+    /**
+     * Device Language
+     */
+    String LANGUAGE = "lang";
+    /**
+     * Attribute which denotes the app version name
+     */
+    String APP_VERSION_NAME = "avn";
+    /**
+     * Attribute which denotes the app version code
+     */
+    String APP_VERSION_CODE = "avc";
+    /**
+     * Device Attribute Constant denoting device network connectivity type
+     */
+    String CONNECTION_TYPE = "conn";
+    /**
+     * PureMetrics SDK version code
+     */
+    String SDK_VERSION = "sdkv";
   }
 
   /**
@@ -411,11 +411,7 @@ final class Constants {
     /**
      * Referral code of this user
      */
-    static final String REFERRAL_CODE = "_refl";
-    /**
-     * Referrer code of the user who referred this user
-     */
-    static final String REFERRER_CODE = "_refr";
+    static final String REFERRAL_DETAILS = "_ref";
 
     private Events() {
     }
@@ -434,6 +430,10 @@ final class Constants {
        * Event name for Transaction failed
        */
       String FAILED = "_trnf";
+      /**
+       * Event name for Transaction Cancelled
+       */
+      String CANCELLED = "_trnc";
     }
 
     interface Attributes {
@@ -545,6 +545,14 @@ final class Constants {
        * <b>Onboarding Measurement: </b> Name of the onboarding step
        */
       String NAME = "nm";
+      /**
+       * Referral code of this user
+       */
+      String REFERRAL_CODE = "_refl";
+      /**
+       * Referrer code of the user who referred this user
+       */
+      String REFERRER_CODE = "_refr";
     }
   }
 }

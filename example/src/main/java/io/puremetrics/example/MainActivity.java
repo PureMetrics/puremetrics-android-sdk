@@ -22,21 +22,21 @@ public class MainActivity extends AppCompatActivity {
 
     PureMetrics.trackSessionStart("app", null);
 
-    PureMetrics.setReferralCode("vfmz10");
-    PureMetrics.setReferrer("vfmz09");
+    PureMetrics.setReferralCode("vfmz10", null);
+    PureMetrics.setReferrerCode("vfmz09", null);
 
     /* In an ideal world your app code would not look like this.*/
     TextView textView = (TextView) findViewById(R.id.textView);
     String language = "Device Language: " + Locale.getDefault().getLanguage();
     textView.setText(language);
-    HashMap<String, Object> extras = new HashMap<>();
+    final HashMap<String, Object> extras = new HashMap<>();
     extras.put("txt_length", 50);
     extras.put("has_image", true);
     extras.put("personalized", true);
 
     PureMetrics.trackDeeplinkAttribution("facebook", "notification", "456789ao", "app://link", extras);
 
-    String transactionId = UUID.randomUUID().toString();
+    final String transactionId = UUID.randomUUID().toString();
     HashMap<String, Object> meta = new HashMap<>();
     meta.put("loyalty", 10);
     meta.put("channel", "ad");
@@ -126,6 +126,14 @@ public class MainActivity extends AppCompatActivity {
       @Override
       public void onClick(View view) {
         PureMetrics.trackOnboardingStep("test", 1, 1, "StepName", null, null);
+      }
+    });
+
+    Button transactionCancelled = (Button) findViewById(R.id.button7);
+    transactionCancelled.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        PureMetrics.trackOrderCancellation(transactionId, 0, null, extras);
       }
     });
   }
