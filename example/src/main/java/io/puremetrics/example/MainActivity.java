@@ -20,7 +20,7 @@ public class MainActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
 
-    PureMetrics.trackSessionStart("app", null);
+    // PureMetrics.trackSessionStart("app", null);
 
     PureMetrics.setReferralCode("vfmz10", null);
     PureMetrics.setReferrerCode("vfmz09", null);

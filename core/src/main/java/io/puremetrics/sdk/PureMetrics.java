@@ -183,6 +183,9 @@ public final class PureMetrics {
         PureMetrics.log(LOG_LEVEL.DEBUG, "Last known session start: " + _INSTANCE.sessionId + " current time: " + curTime + " | _SESSION_DURATION: " + _SESSION_DURATION);
         _INSTANCE.sessionId = curTime;
         _INSTANCE.saveNewSessionId(curTime);
+        if (null == map) {
+          map = new HashMap<>();
+        }
         //add connection type in session start this supersedes send connection
         map.put(Constants.RequestAttributes.CONNECTION_TYPE, Utils.getNetworkClass(_INSTANCE.appContext));
         //if it a new session and auto tracking is enabled track a session start event
@@ -1004,7 +1007,7 @@ public final class PureMetrics {
       editor.remove(Constants.PREF_KEYS.LAST_SESSION_ID);
       editor.apply();
     }
-    checkAndTrackSession(new HashMap<String, Object>(), false);
+    checkAndTrackSession(null, false);
   }
 
   /**
